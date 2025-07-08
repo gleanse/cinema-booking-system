@@ -1,0 +1,43 @@
+# GLOBAL
+# ====================
+.env
+.env.*
+.vscode/
+.idea/
+*.log
+*.DS_Store
+Thumbs.db
+
+# BACKEND
+# ====================
+backend/__pycache__/
+backend/**/*.py[cod]
+backend/*.py[cod]
+backend/venv/
+backend/static/
+backend/media/
+backend/staticfiles/
+backend/local_settings.py
+backend/*.pot
+backend/*.pyc
+
+# TEST
+backend/.coverage
+backend/htmlcov/
+backend/coverage.xml
+backend/nosetests.xml
+backend/test-results/
+
+# FRONTEND
+# ====================
+frontend/node_modules/
+frontend/build/
+frontend/dist/
+frontend/.next/
+frontend/.turbo/
+frontend/.eslintcache
+frontend/.parcel-cache/
+frontend/yarn.lock
+frontend/package-lock.json
+frontend/.env
+frontend/.env.*
