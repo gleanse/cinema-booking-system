@@ -1,6 +1,6 @@
 from pathlib import Path
 from decouple import config, Csv
-
+import cloudinary
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config("SECRET_KEY")
@@ -20,8 +20,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'django_filters',
-    'cloudinary',
     'cloudinary_storage',
+    'cloudinary',
     'movies',
 ]
 
@@ -109,19 +109,38 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 # MEDIA STORAGE:
-# for deployment ready storage for poster image
-USE_CLOUDINARY = config('USE_CLOUDINARY', default=False, cast=bool)
+# true or false value that can configure on env.
+USE_CLOUDINARY = config('USE_CLOUDINARY', cast=bool)
 
+# production ready
 if USE_CLOUDINARY:
-    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+    # for deployment ready storage for poster image
+    # latest django storage configuration needs to be in this python dictionary with two keys for default and static files old defaultstorage was depecrated
+    STORAGES = {
+        'default': {
+            'BACKEND': 'cloudinary_storage.storage.MediaCloudinaryStorage',
+        },
+        'staticfiles': {
+            'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage',
+        },
+    }
 
+    # cloudinary configuration for api calls
+    cloudinary.config(
+        cloud_name=config('CLOUDINARY_CLOUD_NAME'),
+        api_key=config('CLOUDINARY_API_KEY'),
+        api_secret=config('CLOUDINARY_API_SECRET'),
+        secure=True
+        )
+    
+    # cloudinary storage settings mainly for storage
     CLOUDINARY_STORAGE = {
         'CLOUD_NAME': config('CLOUDINARY_CLOUD_NAME'),
         'API_KEY': config('CLOUDINARY_API_KEY'),
         'API_SECRET': config('CLOUDINARY_API_SECRET'),
-    }
-else: 
-    # for local development and testing only, poster image storage
+        'SECURE': True,
+        }
+else:
+    # for local development testing use local storage
     MEDIA_URL = config('MEDIA_URL', default='/media/')
     MEDIA_ROOT = BASE_DIR / config('MEDIA_ROOT', default='media')
-    
