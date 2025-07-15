@@ -11,7 +11,13 @@ class Genre(models.Model):
 class Movie(models.Model):
     title = models.CharField(max_length=150)
     description = models.TextField(max_length=2000)
-    genre = models.ForeignKey(Genre, on_delete=models.SET_NULL, null=True, blank=True)
+    genre = models.ForeignKey(
+        Genre,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='movies',
+        )
 
     class RatingChoices(models.TextChoices):
         G = "G", "General Audience"
@@ -46,3 +52,5 @@ class Movie(models.Model):
     
 
 # NOTE: maybe add director or cast field in movie maybe in next version but for now ill minimize it temporary
+# and also im planning to make the foreignkey of genre field of my models movies from foreign key to manytomany field but maybe its better to move it on v2 of the api
+# just incase i forgot the workarounds for versioning api that involves of modification of the models just declared a copy of same fields and ignore the fields based on version on each serializers of version api like theres own copy field version each api version
