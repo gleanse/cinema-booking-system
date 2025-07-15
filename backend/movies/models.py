@@ -17,7 +17,7 @@ class Movie(models.Model):
         null=True,
         blank=True,
         related_name='movies',
-        )
+    )
 
     class RatingChoices(models.TextChoices):
         G = "G", "General Audience"
