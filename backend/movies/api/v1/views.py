@@ -1,7 +1,9 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.exceptions import NotFound  
+from rest_framework.exceptions import NotFound
+from django.db.models import Count
+from utils.base_views import BaseDetailView
 
 from movies.models import Movie, Genre
 from .serializers import (
@@ -9,8 +11,14 @@ from .serializers import (
     MovieSerializer,
     GenreMovieRelatedSerializer,
     GenreSerializer,
+    GenreMovieCountSerializer,
 )
 
+# NOTE: No DELETE on list views for now too dangerous
+# ill add bulk delete later but maybe not here and it will be secured
+
+# -----------------GENRE VIEWS----------------------------
+# LIST view
 class GenreListView(APIView):
     def post(self, request):
         serializer = GenreSerializer(data=request.data)
@@ -20,16 +28,74 @@ class GenreListView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request):
-        genres = Genre.objects.all()
-        serializer = GenreSerializer(genres, many=True)
+        # counts of movie related to the genre
+        include_count = request.query_params.get('include_count', 'false').lower() == 'true'
+
+        if include_count:
+            genres = Genre.objects.annotate(movie_count=Count('movies'))
+            serializer = GenreMovieCountSerializer(genres, many=True)
+        else:
+            genres = Genre.objects.all()
+            serializer = GenreSerializer(genres, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+# DETAIL view
+class GenreDetailView(BaseDetailView):
+    model = Genre
+    not_found_message = "Genre not found"
+
+    def get(self, request, pk):
+        include_count = request.query_params.get('include_count', 'false').lower() == 'true'
+
+        if include_count:
+            genre = Genre.objects.annotate(movie_count=Count('movies')).filter(pk=pk).first()
+            if not genre:
+                raise NotFound(detail="Genre not found")
+            serializer = GenreMovieCountSerializer(genre)
+        else:
+            genre = self.get_object(pk)
+            serializer = GenreSerializer(genre)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    def patch(self, request, pk):
+        genre = self.get_object(pk)
+        serializer = GenreSerializer(genre, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def put(self, request, pk):
+        genre = self.get_object(pk)
+        serializer = GenreSerializer(genre, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def delete(self, request, pk):
+        genre = self.get_object(pk)
+        genre.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+# CUSTOM view
+class GenreMoviesView(BaseDetailView):
+    model = Genre
+    not_found_message = "Genre not found"
+
+    def get(self, request, pk):
+        genre = self.get_object(pk)
+        serializer = GenreMovieRelatedSerializer(genre)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+# -----------------MOVIE VIEWS----------------------------
+# LIST view
 class MovieListView(APIView):
-    # show all fields of each movie in list of movies
     def get(self, request):
         movies = Movie.objects.all()
-        mode = request.query_params.get("fields")
+        mode = request.query_params.get("fields","summary").lower()
 
         if mode == "full":
             serializer = MovieSerializer(movies, many=True)
@@ -44,18 +110,14 @@ class MovieListView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+# DETAIL view
+class MovieDetailView(BaseDetailView):
+    model = Movie
+    not_found_message = "Movie not found"
 
-class MovieDetailView(APIView):
-    def get_object(self, pk):
-        try:
-            movie = Movie.objects.get(pk=pk)
-        except Movie.DoesNotExist:
-            raise NotFound(detail="Movie not found")
-        return movie
-    
     def get(self, request, pk):
         movie = self.get_object(pk)
-        mode = request.query_params.get("fields")
+        mode = request.query_params.get("fields","summary").lower()
 
         if mode == "full":
             serializer = MovieSerializer(movie)
