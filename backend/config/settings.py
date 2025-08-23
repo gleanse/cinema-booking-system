@@ -64,19 +64,27 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-    'default': dj_database_url.config(
-        default={
+# Check if we're on Render (DATABASE_URL exists)
+if config('DATABASE_URL', default=None):
+    # Production: Use Render's DATABASE_URL
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=config('DATABASE_URL'),
+            conn_max_age=600
+        )
+    }
+else:
+    # Local: Use your existing config
+    DATABASES = {
+        'default': {
             'ENGINE': 'django.db.backends.postgresql',
             'NAME': config('DB_NAME'),
-            'USER': config('DB_USER'), 
+            'USER': config('DB_USER'),
             'PASSWORD': config('DB_PASSWORD'),
             'HOST': config('DB_HOST'),
             'PORT': config('DB_PORT', cast=int),
-        },
-        conn_max_age=600
-    )
-}
+        }
+    }
 
 
 # Password validation
