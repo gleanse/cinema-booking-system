@@ -8,6 +8,9 @@ SECRET_KEY = config('SECRET_KEY')
 DEBUG = config('DEBUG', cast=bool)
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=Csv())
 
+# TODO[security]: Enable production security flags
+# See SECURITY_NOTES.md for details
+
 
 # Application definition
 
@@ -61,12 +64,17 @@ TEMPLATES = [
 WSGI_APPLICATION = 'config.wsgi.application'
 
 
-# Database
-# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-# Check if we're on Render (DATABASE_URL exists)
-if config('DATABASE_URL', default=None):
-    # Production: Use Render's DATABASE_URL
+if config('SQLITE_USE', default=False, cast=bool):
+    # PORTABILITY (portable, SQLite works anywhere)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'cinema_booking_db.sqlite3',
+        }
+    }
+elif config('DATABASE_URL', default=None):
+    # CLOUD PRODUCTION HOSTED (supabase deployed postgreSQL database)
     DATABASES = {
         'default': dj_database_url.config(
             default=config('DATABASE_URL'),
@@ -74,7 +82,7 @@ if config('DATABASE_URL', default=None):
         )
     }
 else:
-    # Local: Use your existing config
+    # LOCAL DEVELOPMENT (local server postgreSQL database)
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
