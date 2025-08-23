@@ -4,6 +4,11 @@ from rest_framework import status
 from rest_framework.exceptions import NotFound
 from django.db.models import Count
 from utils.base_views import BaseDetailView
+from .services import (
+    get_movies,
+    get_movies_bygenre,
+)
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiTypes
 
 from movies.models import Movie, Genre
 from .serializers import (
@@ -79,16 +84,59 @@ class GenreDetailView(BaseDetailView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-# CUSTOM view
+# CUSTOM view------------------------------------------------------------------------------------------------------
 class GenreMoviesView(BaseDetailView):
+    """
+    API endpoint to retrieve the movies under a specific genre
+
+    this views support optional query parameters:
+    - limit (int): number of movies to return (default: 5, max: 50)
+    - include_inactive (bool): include inactive movies if 'true'(default: 'false')
+    - fields (str): either 'summary' or 'full' this will control the response fields detail level (default: 'summary')
+
+    example:
+        GET /api/v1/genres/3/movies?limit=10&include_inactive=true&fields=full
+    """
+
     model = Genre
     not_found_message = "Genre not found"
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="limit",
+                type=OpenApiTypes.INT,
+                location=OpenApiParameter.QUERY,
+                description="Max number of movies to return (default=5, max=50)"
+            ),
+            OpenApiParameter(
+                name="include_inactive",
+                type=OpenApiTypes.BOOL,
+                location=OpenApiParameter.QUERY,
+                description="Include inactive movies (true/false)"
+            ),
+            OpenApiParameter(
+                name="fields",
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                description="Return mode: 'summary' or 'full'"
+            ),
+        ]
+    )
+
     def get(self, request, pk):
         genre = self.get_object(pk)
-        serializer = GenreMovieRelatedSerializer(genre)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        limit = int(request.query_params.get('limit', 5))
+        include_inactive = request.query_params.get('include_inactive','false').lower()=='true'
+        mode = request.query_params.get("fields","summary").lower()
 
+        if mode == "full":
+            movies = get_movies_bygenre(genre_id=pk, limit=limit, include_inactive=include_inactive)
+            serializer = MovieSerializer(movies, many=True)
+            return Response(serializer.data)
+        else:
+            serializer = GenreMovieRelatedSerializer(genre)
+            return Response(serializer.data, status=status.HTTP_200_OK)
 
 # -----------------MOVIE VIEWS----------------------------
 # LIST view

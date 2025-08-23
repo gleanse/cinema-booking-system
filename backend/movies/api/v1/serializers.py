@@ -7,7 +7,7 @@ class MovieListSerializer(serializers.ModelSerializer):
         model = Movie
         fields = ['id', 'title', 'age_rating']
 
-# GENRE with its related movies
+# GENRE with its related movies (minimal movie fields too)
 class GenreMovieRelatedSerializer(serializers.ModelSerializer):
     movies = MovieListSerializer(many=True, read_only=True)
 
@@ -26,7 +26,7 @@ class GenreSerializer(serializers.ModelSerializer):
         model = Genre
         fields = ['id','name','description']   
 
-# MOVIE including all fields
+# MOVIE including all fields (usually used in details but can be use by list too so basically its the normal full fields)
 class MovieSerializer(serializers.ModelSerializer):
     genre = serializers.PrimaryKeyRelatedField(queryset=Genre.objects.all())
     genre_detail = GenreSerializer(source='genre', read_only=True)
