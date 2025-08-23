@@ -20,12 +20,12 @@ const MovieList = () => {
       <h2 className="text-2xl font-bold mb-4 text-gray-800">Movie List</h2>
       <ul className="space-y-2">
         {movies.map((movie) => (
-          <li
-            key={movie.id}
-            className="bg-blue-100 hover:bg-blue-200 text-blue-900 px-4 py-2 rounded-md transition duration-200"
-          >
+          <li key={movie.id}>
             <span className="font-semibold">{movie.title}</span> —{' '}
             {movie.duration} mins
+            <div className="text-sm text-gray-600">
+              {movie.genre_detail?.name || 'Unknown'}
+            </div>
           </li>
         ))}
       </ul>
