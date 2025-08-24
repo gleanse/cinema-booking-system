@@ -19,6 +19,10 @@ these are things to enable, review, or monitor when authentication, user data, o
 - [ ] Rotate DB passwords regularly
 - [ ] Ensure `SECRET_KEY` is strong and kept in environment variables
 - [ ] Only give database user minimal privileges
+- [ ] Current status: Tables are "unrestricted" - security disabled
+- [ ] Action needed: Enable RLS on all tables in Supabase
+- [ ] Quick fix: Table Editor > Enable RLS toggle on each table
+- [ ] Add basic policy: CREATE POLICY "allow_all" ON table_name FOR ALL USING (true); Database URL could leak
 
 ## Notes / Reminders
 - Only enable cookie & header security when `DEBUG = False`

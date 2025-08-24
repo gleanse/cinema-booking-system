@@ -78,7 +78,7 @@ elif config('DATABASE_URL', default=None):
     DATABASES = {
         'default': dj_database_url.config(
             default=config('DATABASE_URL'),
-            conn_max_age=600
+            conn_max_age=120
         )
     }
 else:
@@ -125,7 +125,7 @@ USE_I18N = True
 
 USE_TZ = True
 
-
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -170,5 +170,3 @@ else:
 REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS':'drf_spectacular.openapi.AutoSchema',
 }
-
-STATIC_ROOT = BASE_DIR / 'staticfiles'
