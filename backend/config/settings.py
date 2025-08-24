@@ -8,8 +8,8 @@ SECRET_KEY = config('SECRET_KEY')
 DEBUG = config('DEBUG', cast=bool)
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=Csv())
 
-# TODO[security]: Enable production security flags
-# See SECURITY_NOTES.md for details
+# TODO[security]: enable production security flags
+# see SECURITY_NOTES.md for details
 
 
 # Application definition
@@ -22,7 +22,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    "drf_spectacular",
     'corsheaders',
     'django_filters',
     'cloudinary_storage',
@@ -166,7 +165,3 @@ else:
     # for local development testing use local storage
     MEDIA_URL = config('MEDIA_URL', default='/media/')
     MEDIA_ROOT = BASE_DIR / config('MEDIA_ROOT', default='media')
-
-REST_FRAMEWORK = {
-    'DEFAULT_SCHEMA_CLASS':'drf_spectacular.openapi.AutoSchema',
-}

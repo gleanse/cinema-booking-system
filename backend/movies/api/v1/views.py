@@ -8,8 +8,6 @@ from .services import (
     get_movies,
     get_movies_bygenre,
 )
-from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiTypes
-
 from movies.models import Movie, Genre
 from .serializers import (
     MovieListSerializer,
@@ -24,6 +22,7 @@ from .serializers import (
 
 # -----------------GENRE VIEWS----------------------------
 # LIST view
+# explanation: see docs/API.md -> GENRE class views > LIST genres view endpoints
 class GenreListView(APIView):
     def post(self, request):
         serializer = GenreSerializer(data=request.data)
@@ -44,6 +43,7 @@ class GenreListView(APIView):
             serializer = GenreSerializer(genres, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 # DETAIL view
+# explanation: see docs/API.md -> GENRE class views > DETAIL genre view endpoints
 class GenreDetailView(BaseDetailView):
     model = Genre
     not_found_message = "Genre not found"
@@ -83,52 +83,17 @@ class GenreDetailView(BaseDetailView):
         genre.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-
 # CUSTOM view------------------------------------------------------------------------------------------------------
+# explanation: see docs/API.md -> GENRE class views > GENRE movies view endpoints
 class GenreMoviesView(BaseDetailView):
-    """
-    API endpoint to retrieve the movies under a specific genre
-
-    this views support optional query parameters:
-    - limit (int): number of movies to return (default: 5, max: 50)
-    - include_inactive (bool): include inactive movies if 'true'(default: 'false')
-    - fields (str): either 'summary' or 'full' this will control the response fields detail level (default: 'summary')
-
-    example:
-        GET /api/v1/genres/3/movies?limit=10&include_inactive=true&fields=full
-    """
-
     model = Genre
     not_found_message = "Genre not found"
-
-    @extend_schema(
-        parameters=[
-            OpenApiParameter(
-                name="limit",
-                type=OpenApiTypes.INT,
-                location=OpenApiParameter.QUERY,
-                description="Max number of movies to return (default=5, max=50)"
-            ),
-            OpenApiParameter(
-                name="include_inactive",
-                type=OpenApiTypes.BOOL,
-                location=OpenApiParameter.QUERY,
-                description="Include inactive movies (true/false)"
-            ),
-            OpenApiParameter(
-                name="fields",
-                type=OpenApiTypes.STR,
-                location=OpenApiParameter.QUERY,
-                description="Return mode: 'summary' or 'full'"
-            ),
-        ]
-    )
 
     def get(self, request, pk):
         genre = self.get_object(pk)
         limit = int(request.query_params.get('limit', 5))
         include_inactive = request.query_params.get('include_inactive','false').lower()=='true'
-        mode = request.query_params.get("fields","summary").lower()
+        mode = request.query_params.get("detail","summary").lower()
 
         if mode == "full":
             movies = get_movies_bygenre(genre_id=pk, limit=limit, include_inactive=include_inactive)
@@ -140,10 +105,11 @@ class GenreMoviesView(BaseDetailView):
 
 # -----------------MOVIE VIEWS----------------------------
 # LIST view
+# explanation: see docs/API.md -> MOVIE > LIST movies view endpoints
 class MovieListView(APIView):
     def get(self, request):
         movies = Movie.objects.all()
-        mode = request.query_params.get("fields","summary").lower()
+        mode = request.query_params.get("detail","summary").lower()
 
         if mode == "full":
             serializer = MovieSerializer(movies, many=True)
@@ -159,13 +125,14 @@ class MovieListView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 # DETAIL view
+# explanation: see docs/API.md -> MOVIE > DETAIL movie view endpoints
 class MovieDetailView(BaseDetailView):
     model = Movie
     not_found_message = "Movie not found"
 
     def get(self, request, pk):
         movie = self.get_object(pk)
-        mode = request.query_params.get("fields","summary").lower()
+        mode = request.query_params.get("detail","summary").lower()
 
         if mode == "full":
             serializer = MovieSerializer(movie)
@@ -193,3 +160,17 @@ class MovieDetailView(BaseDetailView):
         movie = self.get_object(pk)
         movie.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+# SEARCH view
+# explanation: see docs/API.md -> MOVIE > SEARCH movies view endpoint
+class MovieSearchView(APIView):
+    def get(self, request):
+        query = request.query_params.get('search','')
+        
+        if query:
+            movies = Movie.objects.filter(title__icontains=query)
+        else:
+            movies = Movie.objects.all() # TODO: change this later on now showing movies instead of all movies and maybe add parameter where like show now showing or recent new movies
+        
+        serializer = MovieSerializer(movies, many=True)
+        return Response(serializer.data)

@@ -9,7 +9,6 @@ django-cloudinary-storage==0.3.0
 django-cors-headers==4.7.0
 django-filter==25.1
 djangorestframework==3.16.0
-drf-spectacular==0.28.0
 gunicorn==23.0.0
 idna==3.10
 inflection==0.5.1
