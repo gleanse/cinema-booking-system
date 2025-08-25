@@ -6,7 +6,11 @@ from decouple import config
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', include('movies.urls')),
+    # API version 1.0.0
+    # MOVIES app
+    path('api/v1/', include('movies.api.v1.urls')),
+    # USERS app
+    path('api/v1/', include('users.api.v1.urls')),
 ]
 
 
