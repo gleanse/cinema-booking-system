@@ -72,12 +72,6 @@ if upstash_redis_url:
         'default': {
             'BACKEND': 'django.core.cache.backends.redis.RedisCache',
             'LOCATION': upstash_redis_url,
-            'OPTIONS': {
-                'CONNECTION_POOL_KWARGS': {
-                    'ssl_cert_reqs': None,
-                    'ssl_check_hostname': False,
-                },
-            }
         }
     }
 else:
