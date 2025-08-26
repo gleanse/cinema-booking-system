@@ -16,6 +16,9 @@ from .serializers import (
     GenreSerializer,
     GenreMovieCountSerializer,
 )
+from config.permissions import StaffUserOnly, IsSuperUser, AllowAny
+from config.throttles import AdminOperationThrottle, PublicEndpointThrottle
+
 
 # NOTE: No DELETE on list views for now too dangerous
 # ill add bulk delete later but maybe not here and it will be secured
@@ -24,6 +27,17 @@ from .serializers import (
 # LIST view
 # explanation: see docs/API.md -> GENRE class views > LIST genres view endpoints
 class GenreListView(APIView):
+    # API endpoints LIMITATIONS
+    def get_throttles(self):
+        if self.request.method == 'GET':
+            return [PublicEndpointThrottle()]
+        return [AdminOperationThrottle()]
+    # API endpoints PERMISSIONS
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [AllowAny()]
+        return[StaffUserOnly()]
+
     def post(self, request):
         serializer = GenreSerializer(data=request.data)
         if serializer.is_valid():
@@ -47,6 +61,19 @@ class GenreListView(APIView):
 class GenreDetailView(BaseDetailView):
     model = Genre
     not_found_message = "Genre not found"
+
+    # API endpoints LIMITATIONS
+    def get_throttles(self):
+        if self.request.method == 'GET':
+            return [PublicEndpointThrottle()]
+        return [AdminOperationThrottle()]
+    # API endpoints PERMISSIONS
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [AllowAny()]
+        elif self.request.method == 'DELETE':
+            return [IsSuperUser()]
+        return[StaffUserOnly()]
 
     def get(self, request, pk):
         include_count = request.query_params.get('include_count', 'false').lower() == 'true'
@@ -88,6 +115,8 @@ class GenreDetailView(BaseDetailView):
 class GenreMoviesView(BaseDetailView):
     model = Genre
     not_found_message = "Genre not found"
+    throttle_classes = [PublicEndpointThrottle]
+    permission_classes = [AllowAny]
 
     def get(self, request, pk):
         genre = self.get_object(pk)
@@ -107,6 +136,17 @@ class GenreMoviesView(BaseDetailView):
 # LIST view
 # explanation: see docs/API.md -> MOVIE > LIST movies view endpoints
 class MovieListView(APIView):
+    # API endpoints LIMITATIONS
+    def get_throttles(self):
+        if self.request.method == 'GET':
+            return [PublicEndpointThrottle()]
+        return [AdminOperationThrottle()]
+    # API endpoints PERMISSIONS
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [AllowAny()]
+        return[StaffUserOnly()]
+
     def get(self, request):
         movies = Movie.objects.all()
         mode = request.query_params.get("detail","summary").lower()
@@ -129,6 +169,18 @@ class MovieListView(APIView):
 class MovieDetailView(BaseDetailView):
     model = Movie
     not_found_message = "Movie not found"
+    # API endpoints LIMITATIONS
+    def get_throttles(self):
+        if self.request.method == 'GET':
+            return [PublicEndpointThrottle()]
+        return [AdminOperationThrottle()]
+    # API endpoints PERMISSIONS
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [AllowAny()]
+        elif self.request.method == 'DELETE':
+            return [IsSuperUser()]
+        return[StaffUserOnly()]
 
     def get(self, request, pk):
         movie = self.get_object(pk)
@@ -164,6 +216,9 @@ class MovieDetailView(BaseDetailView):
 # SEARCH view
 # explanation: see docs/API.md -> MOVIE > SEARCH movies view endpoint
 class MovieSearchView(APIView):
+    throttle_classes = [PublicEndpointThrottle]
+    permission_classes = [AllowAny]
+
     def get(self, request):
         query = request.query_params.get('search','')
         

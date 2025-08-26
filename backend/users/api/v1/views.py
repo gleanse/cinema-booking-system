@@ -4,12 +4,11 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.authtoken.models import Token
-from rest_framework.permissions import AllowAny, IsAuthenticated, BasePermission
+from rest_framework.permissions import IsAuthenticated
 from users.api.v1.serializers import UserCreateSerializer
+from config.permissions import IsSuperUser, AllowAny
+from config.throttles import LoginRateThrottle
 
-class IsSuperUser(BasePermission):
-    def has_permission(self, request, view):
-        return request.user and request.user.is_superuser
 
 class CreateUserAccView(APIView):
     permission_classes = [IsSuperUser]
@@ -27,6 +26,7 @@ class CreateUserAccView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class LoginUserAccView(APIView):
+    throttle_classes = [LoginRateThrottle]
     permission_classes = [AllowAny]
 
     def post(self, request):

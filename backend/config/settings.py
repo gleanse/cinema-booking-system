@@ -64,6 +64,26 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
+# cache for throttling
+upstash_url = config('UPSTASH_REDIS_REST_URL', default=None)
+upstash_token = config('UPSTASH_REDIS_REST_TOKEN', default=None)
+if upstash_url and upstash_token:
+    redis_host = upstash_url.replace('https://', '').replace('http://', '')
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+            'LOCATION': f'redis://default:{upstash_token}@{redis_host}:6379',
+        }
+    }
+else:
+    # local development testing caching
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            'LOCATION': 'unique-snowflake',
+        }
+    }
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
@@ -71,6 +91,11 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
+    'DEFAULT_THROTTLE_RATES': {
+        'public': '20/minute',    # 20 requests per minute for public users (per IP)
+        'admin': '500/hour',     # 500 requests per hour per authenticated admin user (per user ID)
+        'login': '5/minute',    # 5 times login attempts only per minute (per IP)
+    }
 }
 
 
