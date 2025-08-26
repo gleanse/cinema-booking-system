@@ -65,14 +65,19 @@ TEMPLATES = [
 WSGI_APPLICATION = 'config.wsgi.application'
 
 # cache for throttling
-upstash_url = config('UPSTASH_REDIS_REST_URL', default=None)
-upstash_token = config('UPSTASH_REDIS_REST_TOKEN', default=None)
-if upstash_url and upstash_token:
-    redis_host = upstash_url.replace('https://', '').replace('http://', '')
+upstash_redis_url = config('UPSTASH_REDIS_URL', default=None)
+
+if upstash_redis_url:
     CACHES = {
         'default': {
             'BACKEND': 'django.core.cache.backends.redis.RedisCache',
-            'LOCATION': f'redis://default:{upstash_token}@{redis_host}:6379',
+            'LOCATION': upstash_redis_url,
+            'OPTIONS': {
+                'CONNECTION_POOL_KWARGS': {
+                    'ssl_cert_reqs': None,
+                    'ssl_check_hostname': False,
+                },
+            }
         }
     }
 else:
