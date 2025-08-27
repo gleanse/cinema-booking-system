@@ -11,6 +11,8 @@ urlpatterns = [
     path('api/v1/', include('movies.api.v1.urls')),
     # USERS app
     path('api/v1/', include('users.api.v1.urls')),
+    # SHOWTIMES app
+    path('api/v1/', include('showtimes.api.v1.urls')),
 ]
 
 
