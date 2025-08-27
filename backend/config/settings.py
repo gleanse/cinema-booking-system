@@ -92,8 +92,8 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ],
     'DEFAULT_THROTTLE_RATES': {
-        'public': '20/minute',    # 20 requests per minute for public users (per IP)
-        'admin': '500/hour',     # 500 requests per hour per authenticated admin user (per user ID)
+        'public': '120/minute',    # 120 requests per minute for public users (per IP)
+        'admin': '1200/hour',     # 1200 requests per hour per authenticated admin user (per user ID)
         'login': '5/minute',    # 5 times login attempts only per minute (per IP)
     }
 }

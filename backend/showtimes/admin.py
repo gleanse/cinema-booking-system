@@ -1,3 +1,4 @@
 from django.contrib import admin
+from showtimes.models import Showtime
 
-# Register your models here.
+admin.site.register(Showtime)
