@@ -1,11 +1,24 @@
 from rest_framework import serializers
 from movies.models import Genre, Movie
 
+# minimall GENRE fields
+class GenreSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Genre
+        fields = ['id','name','description']   
+
 # minimal MOVIE fields
 class MovieListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Movie
-        fields = ['id', 'title', 'age_rating']
+        fields = [
+            'id',
+            'title',
+            'genre',
+            'age_rating',
+            'poster',
+        ]
+
 
 # GENRE with its related movies (minimal movie fields too)
 class GenreMovieRelatedSerializer(serializers.ModelSerializer):
@@ -20,11 +33,6 @@ class GenreMovieRelatedSerializer(serializers.ModelSerializer):
             'movies',
         ]
 
-# minimall GENRE fields
-class GenreSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Genre
-        fields = ['id','name','description']   
 
 # MOVIE including all fields (usually used in details but can be use by list too so basically its the normal full fields)
 class MovieSerializer(serializers.ModelSerializer):

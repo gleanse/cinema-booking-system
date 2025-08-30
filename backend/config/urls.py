@@ -18,5 +18,5 @@ urlpatterns = [
 
 # set the DEBUG to True if the testing will be in local development 
 # DEBUG False if its deploy in production server, configure DEBUG in env. file
-if settings.DEBUG and not config('USE_CLOUDINARY'):
+if settings.DEBUG and not settings.USE_CLOUDINARY:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

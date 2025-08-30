@@ -2,7 +2,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.exceptions import NotFound
-from django.db.models import Count
+from rest_framework.parsers import MultiPartParser, JSONParser
+from django.db.models import Count, Prefetch  
 from utils.base_views import BaseDetailView
 from .services import (
     get_movies,
@@ -111,31 +112,35 @@ class GenreDetailView(BaseDetailView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 # CUSTOM view------------------------------------------------------------------------------------------------------
-# explanation: see docs/API.md -> GENRE class views > GENRE movies view endpoints
+# explanation: see docs/API.md -> GENRE class views > GENRE movies view endpoints (TODO: NEED AN UPDATE EXPLANATION)
+# TODO: this view class need to refactor its working fine for now but it has a weird idk like when the detail is summary the limit seems like not working maybe because it doesnt use the service function
 class GenreMoviesView(BaseDetailView):
     model = Genre
     not_found_message = "Genre not found"
     throttle_classes = [PublicEndpointThrottle]
     permission_classes = [AllowAny]
+    prefetch_related_fields = ['movies']
 
     def get(self, request, pk):
         genre = self.get_object(pk)
         limit = int(request.query_params.get('limit', 5))
         include_inactive = request.query_params.get('include_inactive','false').lower()=='true'
         mode = request.query_params.get("detail","summary").lower()
-
+        
         if mode == "full":
             movies = get_movies_bygenre(genre_id=pk, limit=limit, include_inactive=include_inactive)
-            serializer = MovieSerializer(movies, many=True)
+            serializer = MovieSerializer(movies, many=True, context={'request': request})
             return Response(serializer.data)
         else:
-            serializer = GenreMovieRelatedSerializer(genre)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            serializer = GenreMovieRelatedSerializer(genre, context={'request': request})
+            return Response(serializer.data)
 
 # -----------------MOVIE VIEWS----------------------------
 # LIST view
-# explanation: see docs/API.md -> MOVIE > LIST movies view endpoints
+# explanation: see docs/API.md -> MOVIE > LIST movies view endpoints (TODO: NEED AN UPDATE EXPLANATION)
 class MovieListView(APIView):
+    parser_classes = [MultiPartParser, JSONParser]
+
     # API endpoints LIMITATIONS
     def get_throttles(self):
         if self.request.method == 'GET':
@@ -148,27 +153,30 @@ class MovieListView(APIView):
         return[StaffUserOnly()]
 
     def get(self, request):
-        movies = Movie.objects.all()
+        movies = Movie.objects.select_related('genre').all()
         mode = request.query_params.get("detail","summary").lower()
 
         if mode == "full":
-            serializer = MovieSerializer(movies, many=True)
+            serializer = MovieSerializer(movies, many=True, context={'request': request})
         else:
-            serializer = MovieListSerializer(movies, many=True)
+            serializer = MovieListSerializer(movies, many=True, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request):
-        serializer = MovieSerializer(data=request.data)
+        serializer = MovieSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 # DETAIL view
-# explanation: see docs/API.md -> MOVIE > DETAIL movie view endpoints
+# explanation: see docs/API.md -> MOVIE > DETAIL movie view endpoints (TODO: NEED AN UPDATE EXPLANATION)
 class MovieDetailView(BaseDetailView):
     model = Movie
     not_found_message = "Movie not found"
+    select_related_fields = ['genre']
+    parser_classes = [MultiPartParser, JSONParser]
+
     # API endpoints LIMITATIONS
     def get_throttles(self):
         if self.request.method == 'GET':
@@ -187,14 +195,14 @@ class MovieDetailView(BaseDetailView):
         mode = request.query_params.get("detail","summary").lower()
 
         if mode == "full":
-            serializer = MovieSerializer(movie)
+            serializer = MovieSerializer(movie, context={'request': request})
         else:
-            serializer = MovieListSerializer(movie)
+            serializer = MovieListSerializer(movie, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
     
     def patch(self, request, pk):
         movie = self.get_object(pk)
-        serializer = MovieSerializer(movie, data=request.data, partial=True)
+        serializer = MovieSerializer(movie, data=request.data, partial=True, context={'request': request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -202,7 +210,7 @@ class MovieDetailView(BaseDetailView):
     
     def put(self, request, pk):
         movie = self.get_object(pk)
-        serializer = MovieSerializer(movie, data=request.data)
+        serializer = MovieSerializer(movie, data=request.data, context={'request': request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -214,18 +222,21 @@ class MovieDetailView(BaseDetailView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 # SEARCH view
-# explanation: see docs/API.md -> MOVIE > SEARCH movies view endpoint
+# explanation: see docs/API.md -> MOVIE > SEARCH movies view endpoint (TODO: NEED AN UPDATE EXPLANATION)
 class MovieSearchView(APIView):
-    throttle_classes = [PublicEndpointThrottle]
     permission_classes = [AllowAny]
 
     def get(self, request):
         query = request.query_params.get('search','')
         
         if query:
-            movies = Movie.objects.filter(title__icontains=query)
+            movies = Movie.objects.filter(
+                title__icontains=query,
+                is_active=True 
+            ).select_related('genre')
         else:
-            movies = Movie.objects.all() # TODO: change this later on now showing movies instead of all movies and maybe add parameter where like show now showing or recent new movies
-        
-        serializer = MovieSerializer(movies, many=True)
+            # NOTE: this could be tweak later by adding like now showing default movies instead of just active
+            movies = Movie.objects.filter(is_active=True).select_related('genre')[:20] 
+
+        serializer = MovieListSerializer(movies, many=True, context={'request': request})
         return Response(serializer.data)

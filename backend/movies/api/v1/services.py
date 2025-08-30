@@ -29,9 +29,9 @@ def get_movies_bygenre(genre_id, limit=5, include_inactive=False):
     validate_limit(limit)
 
     if include_inactive:
-        queryset = Movie.objects.filter(genre_id=genre_id)
+        queryset = Movie.objects.filter(genre_id=genre_id).select_related('genre')
     else:
-        queryset = Movie.objects.filter(genre_id=genre_id, is_active=True)
+        queryset = Movie.objects.filter(genre_id=genre_id, is_active=True).select_related('genre')
     
     queryset = queryset.order_by("title")[:limit]
     return queryset
