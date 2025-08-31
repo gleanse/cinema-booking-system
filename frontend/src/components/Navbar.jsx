@@ -1,3 +1,5 @@
+import { useState } from 'react';
+import useTheme from '../hooks/useTheme';
 import {
   HiOutlineHome,
   HiOutlineFilm,
@@ -5,45 +7,21 @@ import {
   HiOutlineBuildingOffice2,
   HiOutlineBars3,
   HiOutlineXMark,
-  HiOutlineSparkles,
   HiOutlineSun,
   HiOutlineMoon,
 } from 'react-icons/hi2';
+import { GiTheater } from 'react-icons/gi';
 
 const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeItem, setActiveItem] = useState('Home');
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const { isDarkMode, toggleDarkMode } = useTheme();
 
   const navItems = [
     { name: 'Home', href: '/', icon: HiOutlineHome },
     { name: 'Movies', href: '/movies', icon: HiOutlineFilm },
     { name: 'Cinemas', href: '/cinemas', icon: HiOutlineBuildingOffice2 },
-    { name: 'My Bookings', href: '/bookings', icon: HiOutlineTicket },
   ];
-
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('theme');
-    const prefersDark = window.matchMedia(
-      '(prefers-color-scheme: dark)'
-    ).matches;
-
-    if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
-      setIsDarkMode(true);
-      document.documentElement.classList.add('dark');
-    }
-  }, []);
-
-  const toggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode);
-    if (!isDarkMode) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-    }
-  };
 
   const handleItemClick = (itemName) => {
     setActiveItem(itemName);
@@ -51,16 +29,16 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-primary shadow-lg border-b border-secondary/20 transition-colors duration-300">
+    <nav className="sticky top-0 z-50 bg-primary/85 backdrop-blur-md shadow-lg border-b border-secondary/20 transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* LOGO */}
           <div className="flex-shrink-0 flex items-center">
             <div className="flex items-center space-x-2">
-              <div className="bg-accent p-2 rounded-lg transition-colors duration-300">
-                <HiOutlineSparkles className="h-6 w-6 text-white" />
+              <div className="bg-secondary p-2 rounded-lg transition-colors duration-300">
+                <GiTheater className="h-6 w-6 text-white" />
               </div>
-              <span className="text-xl font-bold text-white transition-colors duration-300">
+              <span className="text-xl font-bold text-secondary transition-colors duration-300">
                 Cinema
               </span>
             </div>
@@ -80,7 +58,7 @@ const Navbar = () => {
                     onClick={() => handleItemClick(item.name)}
                     className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ease-in-out ${
                       isActive
-                        ? 'bg-secondary text-primary shadow-md'
+                        ? 'bg-secondary text-white shadow-md'
                         : 'text-secondary hover:text-white hover:bg-primary/80'
                     }`}
                   >
@@ -95,7 +73,7 @@ const Navbar = () => {
           <div className="flex items-center space-x-2">
             <button
               onClick={toggleDarkMode}
-              className="text-secondary hover:text-white p-2 rounded-lg hover:bg-primary/80 transition-all duration-300"
+              className="cursor-pointer text-secondary hover:text-white p-2 rounded-lg hover:bg-primary/80 transition-all duration-300"
               aria-label="Toggle dark mode"
             >
               {isDarkMode ? (

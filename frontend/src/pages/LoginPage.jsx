@@ -34,12 +34,12 @@ const LoginPage = ({ onLoginSuccess }) => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
+      <div className="bg-background max-w-md w-full space-y-8 p-8 rounded-xl shadow-form border border-white/10 dark:border-primary/20">
         <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-primary">
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-foreground">
             Sign in to your account
           </h2>
-          <p className="mt-2 text-center text-sm text-primary">
+          <p className="mt-2 text-center text-sm text-foreground">
             Welcome back! Please enter your credentials.
           </p>
         </div>

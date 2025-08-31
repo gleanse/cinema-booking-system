@@ -14,7 +14,7 @@ const Input = ({
       {label && (
         <label
           htmlFor={name}
-          className="block text-sm font-medium text-gray-700"
+          className="block text-sm font-medium text-foreground"
         >
           {label}
         </label>
@@ -28,11 +28,11 @@ const Input = ({
         onChange={onChange}
         disabled={disabled}
         placeholder={placeholder}
-        className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed ${
-          error ? 'border-red-300' : 'border-gray-300'
+        className={`text-normal bg-inputbg mt-1 block w-full px-3 py-3 md:py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary focus:border-primary text-base md:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed ${
+          error ? 'border-accent' : 'border-inputbrdr'
         }`}
       />
-      {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
+      {error && <p className="mt-1 text-sm text-accent-600">{error}</p>}
     </div>
   );
 };

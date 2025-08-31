@@ -1,56 +1,49 @@
 @import 'tailwindcss';
 
-@layer base {
-  :root {
-    /* DEFAULT / LIGHT MODE */
-    --primary: 0 28 85; /* #001C55(DEEP NAVY BLUE)*/
-    --secondary: 147 197 253; /* #8DA9C4(BRIGHT SOFT BLUE)*/
-    --accent: 239 48 84; /* #EF3054(BOLD RED)*/
-    --neutral: 94 93 92; /* #5E5D5C(WARM GRAY)*/
-    --background: 249 250 251; /* #F9FAFB(CLEAN COOL WHITE)*/
-    --foreground: 17 24 39; /* #111827 (NEAR BLACK) FOR TEXT */
-  }
-
-  .dark {
-    /* DARK MODE */
-    --primary: 59 130 246; /* #3B82F6(BRIGHT BLUE) */
-    --secondary: 147 197 253; /* #8DA9C4(BRIGHT SOFT BLUE) */
-    --accent: 248 113 113; /* #F87171(SOFTER RED) */
-    --neutral: 156 163 175; /* #9CA3AF(LIGHT GRAY) */
-    --background: 17 24 39; /* #111827 (NEAR BLACK) */
-    --foreground: 249 250 251; /* #F9FAFB(CLEAN COOL WHITE) FOR TEXT */
-  }
+:root {
+  /* DEFAULT / LIGHT MODE */
+  --primary: #001c55;
+  --secondary: #5291f8;
+  --accent: #ef3054;
+  --neutrals: #5e5d5c;
+  --background: #f9fafb;
+  --foreground: #111827;
+  --normal-foreground: #000000;
+  --input-bg: #ffffff;
+  --input-border: #99a1af;
 }
 
-@layer utilities {
-  .text-primary {
-    color: rgb(var(--primary));
-  }
-  .bg-primary {
-    background-color: rgb(var(--primary));
-  }
-  .text-secondary {
-    color: rgb(var(--secondary));
-  }
-  .bg-secondary {
-    background-color: rgb(var(--secondary));
-  }
-  .text-accent {
-    color: rgb(var(--accent));
-  }
-  .bg-accent {
-    background-color: rgb(var(--accent));
-  }
-  .text-neutral {
-    color: rgb(var(--neutral));
-  }
-  .bg-neutral {
-    background-color: rgb(var(--neutral));
-  }
-  .text-foreground {
-    color: rgb(var(--foreground));
-  }
-  .bg-background {
-    background-color: rgb(var(--background));
-  }
+.dark {
+  /* DARK MODE */
+  --primary: #5291f8;
+  --secondary: #001c55;
+  --neutrals: #9ca3af;
+  --background: #111827;
+  --foreground: #f9fafb;
+  --normal-foregroundt: #ffffff;
+  --input-background: #1c2740;
+  --input-border: #354978;
+}
+
+@theme inline {
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
+  --color-accent: var(--accent);
+  --color-neutral: var(--neutrals);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-normal: var(--normal-foregroundt);
+  --color-inputbg: var(--input-background);
+  --color-inputbrdr: var(--input-border);
+
+  --shadow-form: 0 20px 50px rgba(0, 28, 85, 0.4);
+  --shadow-form-dark: 0 20px 50px rgba(82, 145, 248, 0.2);
+}
+
+.shadow-form {
+  box-shadow: var(--shadow-form);
+}
+
+.dark .shadow-form {
+  box-shadow: var(--shadow-form-dark);
 }
