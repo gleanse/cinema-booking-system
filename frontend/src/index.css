@@ -11,6 +11,9 @@
   --normal-foreground: #000000;
   --input-bg: #ffffff;
   --input-border: #99a1af;
+  --footer-background: #e5e7eb;
+  --footer-text: #4b5563;
+  --footer-text-hover: #5291f8;
 }
 
 .dark {
@@ -23,6 +26,9 @@
   --normal-foregroundt: #ffffff;
   --input-background: #1c2740;
   --input-border: #354978;
+  --footer-background: #182136;
+  --footer-text: #d1d5db;
+  --footer-text-hover: #5291f8;
 }
 
 @theme inline {
@@ -35,6 +41,9 @@
   --color-normal: var(--normal-foregroundt);
   --color-inputbg: var(--input-background);
   --color-inputbrdr: var(--input-border);
+  --color-footerbg: var(--footer-background);
+  --color-footertxt: var(--footer-text);
+  --color-footertxt-hover: var(--footer-text-hover);
 
   --shadow-form: 0 20px 50px rgba(0, 28, 85, 0.4);
   --shadow-form-dark: 0 20px 50px rgba(82, 145, 248, 0.2);
