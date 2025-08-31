@@ -3,7 +3,9 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.exceptions import NotFound
 from rest_framework.parsers import MultiPartParser, JSONParser
-from django.db.models import Count, Prefetch  
+from django.db.models import Count, Prefetch
+from django.utils import timezone
+from showtimes.models import Showtime  
 from utils.base_views import BaseDetailView
 from .services import (
     get_movies,
@@ -153,7 +155,16 @@ class MovieListView(APIView):
         return[StaffUserOnly()]
 
     def get(self, request):
-        movies = Movie.objects.select_related('genre').all()
+        movies = Movie.objects.select_related('genre').prefetch_related(
+            Prefetch(
+                'showtimes',
+                queryset=Showtime.objects.filter(
+                    is_active=True,
+                    show_date__gte=timezone.now().date()
+                ).order_by('show_date', 'show_time')
+            )
+        ).all()
+    
         mode = request.query_params.get("detail","summary").lower()
 
         if mode == "full":
@@ -233,10 +244,25 @@ class MovieSearchView(APIView):
             movies = Movie.objects.filter(
                 title__icontains=query,
                 is_active=True 
-            ).select_related('genre')
+            ).select_related('genre').prefetch_related(
+                Prefetch(
+                    'showtimes',
+                    queryset=Showtime.objects.filter(
+                        is_active=True,
+                        show_date__gte=timezone.now().date()
+                    ).order_by('show_date', 'show_time')
+                )
+            )
         else:
-            # NOTE: this could be tweak later by adding like now showing default movies instead of just active
-            movies = Movie.objects.filter(is_active=True).select_related('genre')[:20] 
+            movies = Movie.objects.filter(is_active=True).select_related('genre').prefetch_related(
+                Prefetch(
+                    'showtimes',
+                    queryset=Showtime.objects.filter(
+                        is_active=True,
+                        show_date__gte=timezone.now().date()
+                    ).order_by('show_date', 'show_time')
+                )
+            )[:20] 
 
         serializer = MovieListSerializer(movies, many=True, context={'request': request})
         return Response(serializer.data)

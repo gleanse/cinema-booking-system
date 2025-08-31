@@ -21,6 +21,10 @@ class ShowtimeListView(APIView):
 
     def get(self, request):
         showtimes = Showtime.objects.filter(is_active=True)
+        movie_id = request.query_params.get('movie')
+        if movie_id:
+            showtimes = showtimes.filter(movie_id=movie_id)
+
         mode = request.query_params.get("detail", "summary").lower()
         
         if mode == "full":
