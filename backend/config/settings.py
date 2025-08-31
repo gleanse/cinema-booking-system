@@ -5,7 +5,7 @@ import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY')
-DEBUG = config('DEBUG', cast=bool)
+DEBUG = config('DEBUG', default=True, cast=bool)
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=Csv())
 
 # TODO[security]: enable production security flags
@@ -44,7 +44,15 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-CORS_ALLOW_ALL_ORIGINS = True
+# when debug which is development local it will use any origins like localhost or postman
+if DEBUG:
+    CORS_ALLOW_ALL_ORIGINS = True
+else:
+# during production it will only use the frontend url 
+    CORS_ALLOW_ALL_ORIGINS = False
+    CORS_ALLOWED_ORIGINS = [
+        config("FRONTEND_URL")
+    ]
 
 ROOT_URLCONF = 'config.urls'
 
