@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { NavLink } from 'react-router-dom';
 import useTheme from '../hooks/useTheme';
 import {
   HiOutlineHome,
@@ -10,38 +11,36 @@ import {
   HiOutlineSun,
   HiOutlineMoon,
 } from 'react-icons/hi2';
-import { GiTheater } from 'react-icons/gi';
 
 const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [activeItem, setActiveItem] = useState('Home');
   const { isDarkMode, toggleDarkMode } = useTheme();
 
   const navItems = [
-    { name: 'Home', href: '/', icon: HiOutlineHome },
-    { name: 'Movies', href: '/movies', icon: HiOutlineFilm },
-    { name: 'Cinemas', href: '/cinemas', icon: HiOutlineBuildingOffice2 },
+    { name: 'Home', to: '/', icon: HiOutlineHome },
+    { name: 'Movies', to: '/movies', icon: HiOutlineFilm },
+    { name: 'Cinemas', to: '/cinema', icon: HiOutlineBuildingOffice2 },
   ];
-
-  const handleItemClick = (itemName) => {
-    setActiveItem(itemName);
-    setIsMobileMenuOpen(false);
-  };
 
   return (
     <nav className="sticky top-0 z-50 bg-primary/85 backdrop-blur-md shadow-lg border-b border-secondary/20 transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* LOGO */}
+          {/* LOGO (when in production it will get the assets logo from cloudinary cloud storage if its not available it will use the span element text instead) */}
           <div className="flex-shrink-0 flex items-center">
-            <div className="flex items-center space-x-2">
-              <div className="bg-secondary p-2 rounded-lg transition-colors duration-300">
-                <GiTheater className="h-6 w-6 text-white" />
-              </div>
-              <span className="text-xl font-bold text-secondary transition-colors duration-300">
-                Cinema
-              </span>
-            </div>
+            <NavLink to="/" className="flex items-center space-x-2">
+              {import.meta.env.VITE_LOGO_URL ? (
+                <img
+                  src={import.meta.env.VITE_LOGO_URL}
+                  alt="Cinema Logo"
+                  className="h-12 w-auto"
+                />
+              ) : (
+                <span className="text-xl font-bold text-secondary">
+                  SM Cinema
+                </span>
+              )}
+            </NavLink>
           </div>
 
           {/* DEKSTOP navigation */}
@@ -49,22 +48,23 @@ const Navbar = () => {
             <div className="ml-10 flex items-baseline space-x-1">
               {navItems.map((item) => {
                 const IconComponent = item.icon;
-                const isActive = activeItem === item.name;
 
                 return (
-                  <a
+                  <NavLink
                     key={item.name}
-                    href={item.href}
-                    onClick={() => handleItemClick(item.name)}
-                    className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ease-in-out ${
-                      isActive
-                        ? 'bg-secondary text-white shadow-md'
-                        : 'text-secondary hover:text-white hover:bg-primary/80'
-                    }`}
+                    to={item.to}
+                    end={item.to === '/'}
+                    className={({ isActive }) =>
+                      `flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ease-in-out ${
+                        isActive
+                          ? 'bg-secondary text-white shadow-md'
+                          : 'text-secondary hover:text-white hover:bg-primary/80'
+                      }`
+                    }
                   >
                     <IconComponent className="h-4 w-4" />
                     <span>{item.name}</span>
-                  </a>
+                  </NavLink>
                 );
               })}
             </div>
@@ -104,22 +104,24 @@ const Navbar = () => {
             <div className="px-2 pt-2 pb-3 space-y-1">
               {navItems.map((item) => {
                 const IconComponent = item.icon;
-                const isActive = activeItem === item.name;
 
                 return (
-                  <a
+                  <NavLink
                     key={item.name}
-                    href={item.href}
-                    onClick={() => handleItemClick(item.name)}
-                    className={`flex items-center space-x-3 px-3 py-2 rounded-lg text-base font-medium transition-all duration-300 ease-in-out ${
-                      isActive
-                        ? 'bg-secondary text-primary shadow-md'
-                        : 'text-secondary hover:text-white hover:bg-primary/80'
-                    }`}
+                    to={item.to}
+                    end={item.to === '/'}
+                    className={({ isActive }) =>
+                      `flex items-center space-x-3 px-3 py-2 rounded-lg text-base font-medium transition-all duration-300 ease-in-out ${
+                        isActive
+                          ? 'bg-secondary text-primary shadow-md'
+                          : 'text-secondary hover:text-white hover:bg-primary/80'
+                      }`
+                    }
+                    onClick={() => setIsMobileMenuOpen(false)}
                   >
                     <IconComponent className="h-5 w-5" />
                     <span>{item.name}</span>
-                  </a>
+                  </NavLink>
                 );
               })}
             </div>
