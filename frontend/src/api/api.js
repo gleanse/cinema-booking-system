@@ -49,6 +49,47 @@ export const authAPI = {
   register: (userData) => api.post('users/create/', userData),
 };
 
+// MOVIE api functions
+export const movieAPI = {
+  // GET all movies (summary by default)
+  getMovies: (detail = 'summary') => api.get(`movies/?detail=${detail}`),
+
+  // GET movie by ID with full details
+  getMovieDetails: (id) => api.get(`movies/${id}/?detail=full`),
+
+  // SEARCH movies
+  searchMovies: (query) =>
+    api.get(`movies/search/?search=${encodeURIComponent(query)}`),
+
+  // GET movies by genre
+  getMoviesByGenre: (genreId, limit = 5, detail = 'summary') =>
+    api.get(`genres/${genreId}/movies/?limit=${limit}&detail=${detail}`),
+};
+
+// GENRE api functions
+export const genreAPI = {
+  // GET all genres
+  getGenres: (includeCount = false) =>
+    api.get(`genres/?include_count=${includeCount}`),
+
+  // GET genre by ID
+  getGenreDetails: (id, includeCount = false) =>
+    api.get(`genres/${id}/?include_count=${includeCount}`),
+};
+
+// SHOWTIME api functions
+export const showtimeAPI = {
+  // GET all showtimes
+  getShowtimes: (detail = 'summary') => api.get(`showtimes/?detail=${detail}`),
+
+  // GET showtime by ID
+  getShowtimeDetails: (id, detail = 'summary') =>
+    api.get(`showtimes/${id}/?detail=${detail}`),
+
+  // GET showtimes for a specific movie (you might need to add this endpoint)
+  getMovieShowtimes: (movieId) => api.get(`showtimes/?movie=${movieId}`),
+};
+
 export const tokenUtils = {
   isAuthenticated: () => {
     const token = localStorage.getItem('token');
