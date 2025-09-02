@@ -1,22 +1,62 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { tokenUtils } from '../api/api';
 import Input from '../components/Input';
 import Button from '../components/Button';
 import Alert from '../components/Alert';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
+// TODO: theres still a bug here where first attempt of login even right credentials is still failing and unauthorize this was not api failure because i test on postman and its fine
+// SOLUTION: idk yet but i know the shortcut enter key is the problem when i normally or manually click the button sign in it didnt failed but when i just pressed enter it failed
 const LoginPage = ({ onLoginSuccess }) => {
   const [formData, setFormData] = useState({
     username: '',
     password: '',
+    rememberMe: false,
   });
+  const [showPassword, setShowPassword] = useState(false);
 
-  const { login, loading, error, clearError } = useAuth();
+  const { login, loading, error, clearError, fetchCurrentUser } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const checkAuthAndRedirect = async () => {
+      if (tokenUtils.isAuthenticated()) {
+        try {
+          const result = await fetchCurrentUser();
+          if (result.success) {
+            console.log('User already authenticated, redirecting...');
+            // if admin already authenticated or have existing token no need to show login form again
+            navigate('/admin/genres', { replace: true });
+          }
+        } catch (err) {
+          console.log('Invalid token found, clearing and staying on login');
+          tokenUtils.removeToken();
+        }
+      }
+    };
+
+    checkAuthAndRedirect();
+  }, [navigate, fetchCurrentUser]);
+  useEffect(() => {
+    const handleKeyPress = (e) => {
+      if (e.key === 'Enter' && !loading) {
+        handleSubmit(e);
+      }
+    };
+
+    document.addEventListener('keypress', handleKeyPress);
+    return () => {
+      document.removeEventListener('keypress', handleKeyPress);
+    };
+  }, [loading]);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: type === 'checkbox' ? checked : value,
     }));
 
     if (error) clearError();
@@ -25,11 +65,30 @@ const LoginPage = ({ onLoginSuccess }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const result = await login(formData.username, formData.password);
+    const result = await login(
+      formData.username,
+      formData.password,
+      formData.rememberMe
+    );
 
-    if (result.success && onLoginSuccess) {
-      onLoginSuccess(result);
+    if (result.success) {
+      console.log(
+        `Token stored in ${
+          result.rememberMe ? 'localStorage' : 'sessionStorage'
+        }`
+      );
+
+      if (onLoginSuccess) {
+        onLoginSuccess(result);
+      }
+
+      // TODO: change this when dashboard is available
+      navigate('/admin/genres');
     }
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
   };
 
   return (
@@ -44,10 +103,10 @@ const LoginPage = ({ onLoginSuccess }) => {
           </p>
         </div>
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+        <div className="mt-8 space-y-6">
           <Alert type="error" message={error} onClose={clearError} />
 
-          <div className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <Input
               label="Username"
               name="username"
@@ -58,28 +117,57 @@ const LoginPage = ({ onLoginSuccess }) => {
               required
               disabled={loading}
             />
-            <Input
-              label="Password"
-              name="password"
-              type="password"
-              value={formData.password}
-              onChange={handleChange}
-              placeholder="Enter your password"
-              required
-              disabled={loading}
-            />
-          </div>
 
-          <Button
-            type="submit"
-            loading={loading}
-            disabled={loading}
-            className="w-full"
-            variant="primary"
-          >
-            Sign in
-          </Button>
-        </form>
+            <div className="relative">
+              <Input
+                label="Password"
+                name="password"
+                type={showPassword ? 'text' : 'password'}
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="Enter your password"
+                required
+                disabled={loading}
+              />
+              <button
+                type="button"
+                onClick={togglePasswordVisibility}
+                disabled={loading}
+                className="absolute right-3 top-9 text-gray-500 hover:text-gray-700 focus:outline-none disabled:opacity-50 cursor-pointer"
+              >
+                {showPassword ? <FaEye size={18} /> : <FaEyeSlash size={18} />}
+              </button>
+            </div>
+
+            <div className="flex items-center">
+              <input
+                id="rememberMe"
+                name="rememberMe"
+                type="checkbox"
+                checked={formData.rememberMe}
+                onChange={handleChange}
+                disabled={loading}
+                className="h-4 w-4 text-primary focus:ring-secondary border-inputbrdr rounded bg-inputbg cursor-pointer"
+              />
+              <label
+                htmlFor="rememberMe"
+                className="ml-2 block text-sm text-foreground cursor-pointer"
+              >
+                Remember me
+              </label>
+            </div>
+
+            <Button
+              type="submit"
+              loading={loading}
+              disabled={loading}
+              className="w-full"
+              variant="primary"
+            >
+              Sign in
+            </Button>
+          </form>
+        </div>
 
         <div className="text-center">
           <p className="text-sm text-neutral">

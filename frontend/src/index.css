@@ -14,6 +14,8 @@
   --footer-background: #e5e7eb;
   --footer-text: #4b5563;
   --footer-text-hover: #5291f8;
+  --foredit: #4179d3;
+  --movie-count-tag: #4179d3;
 }
 
 .dark {
@@ -23,12 +25,14 @@
   --neutrals: #9ca3af;
   --background: #111827;
   --foreground: #f9fafb;
-  --normal-foregroundt: #ffffff;
+  --normal-foreground: #ffffff;
   --input-background: #1c2740;
   --input-border: #354978;
   --footer-background: #182136;
   --footer-text: #d1d5db;
   --footer-text-hover: #5291f8;
+  --foredit: #4179d3;
+  --movie-count-tag: #4179d3;
 }
 
 @theme inline {
@@ -38,12 +42,14 @@
   --color-neutral: var(--neutrals);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-normal: var(--normal-foregroundt);
+  --color-normal: var(--normal-foreground);
   --color-inputbg: var(--input-background);
   --color-inputbrdr: var(--input-border);
   --color-footerbg: var(--footer-background);
   --color-footertxt: var(--footer-text);
   --color-footertxt-hover: var(--footer-text-hover);
+  --color-editicon: var(--foredit);
+  --color-movite-count-tag: var(--movie-count-tag);
 
   --shadow-form: 0 20px 50px rgba(0, 28, 85, 0.4);
   --shadow-form-dark: 0 20px 50px rgba(82, 145, 248, 0.2);

@@ -1,12 +1,14 @@
 import { useState } from 'react';
-import { authAPI, tokenUtils } from '../api/api';
+import { authAPI, userAPI, tokenUtils } from '../api/api';
 
 export const useAuth = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [user, setUser] = useState(null);
+  const [userLoading, setUserLoading] = useState(false);
 
-  // LOGINNNNNNNNNN
-  const login = async (username, password) => {
+  // LOGIN
+  const login = async (username, password, rememberMe = false) => {
     setError('');
     setLoading(true);
 
@@ -19,14 +21,18 @@ export const useAuth = () => {
       console.log('Login successful!');
       console.log('Token:', !!token);
       console.log('Is new token:', isNewToken);
-      // store the token in localstorage after success login for auth
-      tokenUtils.setToken(token);
+      console.log('Remember me:', rememberMe);
+
+      // store token based on remember me preference
+      tokenUtils.setToken(token, rememberMe);
+      await fetchCurrentUser();
 
       return {
         success: true,
         token,
         isNewToken,
         username,
+        rememberMe,
       };
     } catch (err) {
       console.error('Login failed:', err);
@@ -47,19 +53,54 @@ export const useAuth = () => {
     }
   };
 
-  // LOGOUTTTTTTTTTTTTT
+  // LOGOUT
   const logout = async () => {
     setLoading(true);
     try {
       await authAPI.logout();
       tokenUtils.removeToken();
+      setUser(null);
       return { success: true };
     } catch (err) {
       console.error('Logout error:', err);
       tokenUtils.removeToken();
+      setUser(null);
       return { success: true };
     } finally {
       setLoading(false);
+    }
+  };
+
+  // FETCH CURRENT USER
+  const fetchCurrentUser = async () => {
+    if (!tokenUtils.isAuthenticated()) {
+      setUser(null);
+      return { success: false, error: 'Not authenticated' };
+    }
+
+    setUserLoading(true);
+    setError('');
+
+    try {
+      const response = await userAPI.getCurrentUser();
+      setUser(response.data);
+      return { success: true, user: response.data };
+    } catch (err) {
+      console.error('Failed to fetch user:', err);
+      let errorMessage = 'Failed to fetch user data';
+
+      if (err.response?.status === 401) {
+        tokenUtils.removeToken();
+        setUser(null);
+        errorMessage = 'Session expired. Please log in again.';
+      } else if (err.response?.data?.error) {
+        errorMessage = err.response.data.error;
+      }
+
+      setError(errorMessage);
+      return { success: false, error: errorMessage };
+    } finally {
+      setUserLoading(false);
     }
   };
 
@@ -68,12 +109,21 @@ export const useAuth = () => {
     return tokenUtils.isAuthenticated();
   };
 
+  // REFRESH USER DATA
+  const refreshUser = async () => {
+    return await fetchCurrentUser();
+  };
+
   return {
     login,
     logout,
     isAuthenticated,
+    fetchCurrentUser,
+    refreshUser,
     loading,
     error,
+    user,
+    userLoading,
     clearError: () => setError(''),
   };
 };

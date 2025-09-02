@@ -12,7 +12,8 @@ const api = axios.create({
 // for adding AUTH TOKENS
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
+    const token =
+      localStorage.getItem('token') || sessionStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Token ${token}`;
     }
@@ -31,10 +32,17 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
+      sessionStorage.removeItem('token');
     }
     return Promise.reject(error);
   }
 );
+
+// USER api functions
+export const userAPI = {
+  // GET current user info
+  getCurrentUser: () => api.get('users/me/'),
+};
 
 // AUTH api functions
 export const authAPI = {
@@ -75,6 +83,18 @@ export const genreAPI = {
   // GET genre by ID
   getGenreDetails: (id, includeCount = false) =>
     api.get(`genres/${id}/?include_count=${includeCount}`),
+
+  // CREATE new genre
+  createGenre: (genreData) => api.post('genres/', genreData),
+
+  // UPDATE genre (full update)
+  updateGenre: (id, genreData) => api.put(`genres/${id}/`, genreData),
+
+  // PARTIAL UPDATE genre
+  updateGenrePartial: (id, genreData) => api.patch(`genres/${id}/`, genreData),
+
+  // DELETE genre
+  deleteGenre: (id) => api.delete(`genres/${id}/`),
 };
 
 // SHOWTIME api functions
@@ -92,20 +112,33 @@ export const showtimeAPI = {
 
 export const tokenUtils = {
   isAuthenticated: () => {
-    const token = localStorage.getItem('token');
-    return !!token;
+    const localToken = localStorage.getItem('token');
+    const sessionToken = sessionStorage.getItem('token');
+    return !!(localToken || sessionToken);
   },
 
   getToken: () => {
-    return localStorage.getItem('token');
+    return localStorage.getItem('token') || sessionStorage.getItem('token');
   },
 
   removeToken: () => {
     localStorage.removeItem('token');
+    sessionStorage.removeItem('token');
   },
 
-  setToken: (token) => {
-    localStorage.setItem('token', token);
+  setToken: (token, rememberMe = false) => {
+    tokenUtils.removeToken();
+    if (rememberMe) {
+      localStorage.setItem('token', token);
+    } else {
+      sessionStorage.setItem('token', token);
+    }
+  },
+
+  getTokenSource: () => {
+    if (localStorage.getItem('token')) return 'localStorage';
+    if (sessionStorage.getItem('token')) return 'sessionStorage';
+    return null;
   },
 };
 
