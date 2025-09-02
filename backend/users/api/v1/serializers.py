@@ -4,7 +4,14 @@ from django.contrib.auth.models import User
 class UserCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['username','email','first_name','last_name','password']
+        fields = [
+            'username',
+            'email',
+            'first_name',
+            'last_name',
+            'password',
+            ]
+        
         extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
@@ -17,3 +24,26 @@ class UserCreateSerializer(serializers.ModelSerializer):
             is_staff=True
         )
         return user
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = [
+            'id',
+            'username',
+            'email',
+            'first_name',
+            'last_name',
+            'is_staff',
+            'is_superuser',
+            'is_active',
+            'date_joined'
+            ]
+        
+        read_only_fields = [
+            'id',
+            'is_staff',
+            'is_superuser',
+            'is_active',
+            'date_joined'
+            ]
