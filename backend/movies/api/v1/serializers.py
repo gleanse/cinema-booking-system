@@ -7,7 +7,14 @@ from django.utils import timezone
 class ShowtimeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Showtime
-        fields = ['id', 'show_date', 'show_time', 'theater_name', 'available_seats', 'ticket_price', 'is_active']
+        fields = [
+            'id',
+            'show_date',
+            'show_time',
+            'theater_name',
+            'available_seats',
+            'ticket_price',
+            'is_active']
 
 # minimall GENRE fields
 class GenreSerializer(serializers.ModelSerializer):
@@ -17,7 +24,8 @@ class GenreSerializer(serializers.ModelSerializer):
 
 # minimal MOVIE fields
 class MovieListSerializer(serializers.ModelSerializer):
-    showtimes = serializers.SerializerMethodField()
+    showtimes = ShowtimeSerializer(many=True, read_only=True)
+    genre_detail = GenreSerializer(source='genre', read_only=True)
     
     class Meta:
         model = Movie
@@ -25,20 +33,13 @@ class MovieListSerializer(serializers.ModelSerializer):
             'id',
             'title',
             'genre',
+            'genre_detail',
             'age_rating',
             'poster',
             'is_active',
             'release_date',
             'showtimes',   
         ]
-
-    def get_showtimes(self, obj):
-        today = timezone.now().date()
-        showtimes = obj.showtimes.filter(
-            is_active=True,
-            show_date__gte=today
-        ).order_by('show_date', 'show_time')
-        return ShowtimeSerializer(showtimes, many=True).data
 
 
 # GENRE with its related movies (minimal movie fields too)
@@ -63,7 +64,7 @@ class MovieSerializer(serializers.ModelSerializer):
         source='get_age_rating_display',
         read_only=True,
     )
-    showtimes = serializers.SerializerMethodField()
+    showtimes = ShowtimeSerializer(many=True, read_only=True)
 
     class Meta:
         model = Movie
@@ -86,14 +87,6 @@ class MovieSerializer(serializers.ModelSerializer):
             'showtimes', 
         ]
         read_only_fields = ['created_at','updated_at']
-    
-    def get_showtimes(self, obj):
-        today = timezone.now().date()
-        showtimes = obj.showtimes.filter(
-            is_active=True,
-            show_date__gte=today
-        ).order_by('show_date', 'show_time')
-        return ShowtimeSerializer(showtimes, many=True).data
 
 # minimal fields of GENRE including the count of related movies
 class GenreMovieCountSerializer(serializers.ModelSerializer):

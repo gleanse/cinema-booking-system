@@ -116,6 +116,7 @@ class GenreDetailView(BaseDetailView):
 # CUSTOM view------------------------------------------------------------------------------------------------------
 # explanation: see docs/API.md -> GENRE class views > GENRE movies view endpoints (TODO: NEED AN UPDATE EXPLANATION)
 # TODO: this view class need to refactor its working fine for now but it has a weird idk like when the detail is summary the limit seems like not working maybe because it doesnt use the service function
+# TODO: critical need to refactor or just remove this is literally useless views lol
 class GenreMoviesView(BaseDetailView):
     model = Genre
     not_found_message = "Genre not found"
@@ -164,7 +165,11 @@ class MovieListView(APIView):
                 ).order_by('show_date', 'show_time')
             )
         ).all()
-    
+
+        genre_id = request.query_params.get("genre")
+        if genre_id:
+            movies = movies.filter(genre_id=genre_id)
+
         mode = request.query_params.get("detail","summary").lower()
 
         if mode == "full":
@@ -238,31 +243,27 @@ class MovieSearchView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
-        query = request.query_params.get('search','')
-        
-        if query:
-            movies = Movie.objects.filter(
-                title__icontains=query,
-                is_active=True 
-            ).select_related('genre').prefetch_related(
-                Prefetch(
-                    'showtimes',
-                    queryset=Showtime.objects.filter(
-                        is_active=True,
-                        show_date__gte=timezone.now().date()
-                    ).order_by('show_date', 'show_time')
-                )
-            )
-        else:
-            movies = Movie.objects.filter(is_active=True).select_related('genre').prefetch_related(
-                Prefetch(
-                    'showtimes',
-                    queryset=Showtime.objects.filter(
-                        is_active=True,
-                        show_date__gte=timezone.now().date()
-                    ).order_by('show_date', 'show_time')
-                )
-            )[:20] 
+        query = request.query_params.get("search", "").strip()
 
-        serializer = MovieListSerializer(movies, many=True, context={'request': request})
+        if len(query) > 100:
+            return Response(
+                {"error": "Search query too long. Maximum 100 characters allowed."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        qs = Movie.objects.filter(is_active=True).select_related("genre").prefetch_related(
+            Prefetch(
+                "showtimes",
+                queryset=Showtime.objects.filter(
+                    is_active=True,
+                    show_date__gte=timezone.now().date()
+                ).order_by("show_date", "show_time")
+            )
+        )
+        if query:
+            movies = qs.filter(title__icontains=query)
+        else:
+            movies = qs[:20]
+
+        serializer = MovieListSerializer(movies, many=True, context={"request": request})
         return Response(serializer.data)
