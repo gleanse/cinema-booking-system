@@ -83,7 +83,7 @@ const MovieCard = ({
         {/* GENRE (optional) */}
         {movie.genre_detail && (
           <div className="flex items-center space-x-2">
-            <span className="text-sm bg-secondary/20 text-secondary px-2 py-1 rounded-full">
+            <span className="text-sm bg-primary/20 text-primary px-2 py-1 rounded-full">
               {movie.genre_detail.name}
             </span>
           </div>
