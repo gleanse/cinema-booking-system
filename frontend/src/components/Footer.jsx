@@ -143,7 +143,7 @@ const Footer = ({
             {showAdminOptions && (
               <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-48 bg-secondary rounded-md shadow-lg py-1 z-10 border border-gray-200">
                 <Link
-                  to="/admin/login"
+                  to="/login"
                   className="px-4 py-2 text-sm text-white hover:text-gray-300 transition-colors flex items-center gap-2"
                   onClick={() => setShowAdminOptions(false)}
                 >

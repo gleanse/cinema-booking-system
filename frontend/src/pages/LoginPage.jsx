@@ -7,8 +7,6 @@ import Button from '../components/Button';
 import Alert from '../components/Alert';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
-// TODO: theres still a bug here where first attempt of login even right credentials is still failing and unauthorize this was not api failure because i test on postman and its fine
-// SOLUTION: idk yet but i know the shortcut enter key is the problem when i normally or manually click the button sign in it didnt failed but when i just pressed enter it failed
 const LoginPage = ({ onLoginSuccess }) => {
   const [formData, setFormData] = useState({
     username: '',
@@ -39,10 +37,20 @@ const LoginPage = ({ onLoginSuccess }) => {
 
     checkAuthAndRedirect();
   }, [navigate, fetchCurrentUser]);
+// FIXED ISSUE no more bug
   useEffect(() => {
     const handleKeyPress = (e) => {
       if (e.key === 'Enter' && !loading) {
-        handleSubmit(e);
+        const form = document.querySelector('form');
+        if (
+          form &&
+          document.activeElement &&
+          form.contains(document.activeElement)
+        ) {
+          form.dispatchEvent(
+            new Event('submit', { cancelable: true, bubbles: true })
+          );
+        }
       }
     };
 

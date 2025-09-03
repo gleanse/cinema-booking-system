@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import LoginPage from './pages/LoginPage';
 import HomePage from './pages/HomePage';
 import Navbar from './components/Navbar';
@@ -9,29 +9,36 @@ import GenresPage from './pages/admin/GenresPage';
 import ProtectedRoute from './components/admin/ProtectedRoute';
 
 function App() {
+  const location = useLocation();
+  const isAdminPage = location.pathname.startsWith('/admin');
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <Navbar />
+      {!isAdminPage && <Navbar />}
 
       <Routes>
         {/* PUBLIC PAGES */}
         <Route path="/" element={<HomePage />} />
         <Route path="/movies/:id" element={<MovieDetailsPage />} />
         <Route path="/movies" element={<MoviesPage />} />
-        <Route path="/admin/login" element={<LoginPage />} />
+        <Route path="/login" element={<LoginPage />} />
 
         {/* ADMIN ONLY PAGES */}
         <Route
-          path="/admin/genres"
+          path="/admin/*"
           element={
             <ProtectedRoute>
-              <GenresPage />
+              <Routes>
+                <Route path="genres" element={<GenresPage />} />
+              </Routes>
             </ProtectedRoute>
           }
         />
       </Routes>
 
-      <Footer companyName={import.meta.env.VITE_REF_COMPANY} />
+      {!isAdminPage && (
+        <Footer companyName={import.meta.env.VITE_REF_COMPANY} />
+      )}
     </div>
   );
 }
