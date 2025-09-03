@@ -93,7 +93,7 @@ const GenresPage = () => {
             Genre Management
           </h1>
           <p className="text-neutral mt-2">
-            Manage movie genres in your system
+            Manage movie genres in the system
           </p>
         </div>
 

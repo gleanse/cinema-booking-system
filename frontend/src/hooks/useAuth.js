@@ -60,6 +60,7 @@ export const useAuth = () => {
       await authAPI.logout();
       tokenUtils.removeToken();
       setUser(null);
+      console.log('Logout successful')
       return { success: true };
     } catch (err) {
       console.error('Logout error:', err);
