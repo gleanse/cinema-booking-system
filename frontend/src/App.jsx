@@ -8,7 +8,7 @@ import MovieDetailsPage from './pages/MovieDetailPage';
 import MoviesPage from './pages/MoviesPage';
 import GenresPage from './pages/admin/GenresPage';
 import ProtectedRoute from './components/admin/ProtectedRoute';
-import Sidebar from './components/admin/SideBar';
+import Sidebar from './components/admin/Sidebar';
 
 function App() {
   const location = useLocation();
