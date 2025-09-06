@@ -103,7 +103,9 @@ REST_FRAMEWORK = {
         'public': '120/minute',    # 120 requests per minute for public users (per IP)
         'admin': '1200/hour',     # 1200 requests per hour per authenticated admin user (per user ID)
         'login': '5/minute',    # 5 times login attempts only per minute (per IP)
-    }
+    },
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 15,
 }
 
 
