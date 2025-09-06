@@ -1,12 +1,21 @@
-import { useCallback, useState, useMemo } from 'react';
+import { useCallback, useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MovieGrid from '../components/MovieGrid';
 import SearchBar from '../components/SearchBar';
-import useMovies from '../hooks/useMovies';
+import useMoviesLazyLoading from '../hooks/useMoviesLazyLoading';
 
 const HomePage = () => {
   const navigate = useNavigate();
-  const { movies, loading, error, refetch, searchMovies } = useMovies();
+  const {
+    movies,
+    loading,
+    loadingMore,
+    hasMore,
+    loadMore,
+    error,
+    refetch,
+    searchMovies,
+  } = useMoviesLazyLoading();
   const [currentSearch, setCurrentSearch] = useState('');
 
   const handleMovieClick = (movie) => {
@@ -37,6 +46,23 @@ const HomePage = () => {
       (movie) => movie.showtimes && movie.showtimes.length > 0
     );
   }, [movies]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollTop = window.scrollY;
+      const windowHeight = window.innerHeight;
+      const documentHeight = document.documentElement.scrollHeight;
+
+      if (scrollTop + windowHeight >= documentHeight - 200) {
+        if (!loadingMore && hasMore && !currentSearch) {
+          loadMore();
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [loadMore, loadingMore, hasMore, currentSearch]);
 
   const getEmptyMessage = () => {
     if (currentSearch) {
@@ -94,6 +120,33 @@ const HomePage = () => {
         onMovieClick={handleMovieClick}
         emptyMessage={getEmptyMessage()}
       />
+
+      {/* loading more indicator */}
+      {loadingMore && (
+        <div className="mt-8 text-center">
+          <div className="inline-flex items-center px-4 py-2 bg-primary/10 rounded-lg">
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary mr-2"></div>
+            <span className="text-primary font-medium">
+              Loading more movies...
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* end of results */}
+      {!loading &&
+        !loadingMore &&
+        !hasMore &&
+        !currentSearch &&
+        moviesWithShowtimes.length > 0 && (
+          <div className="mt-8 text-center">
+            <div className="inline-flex items-center px-4 py-2 bg-neutral/10 rounded-lg">
+              <span className="text-neutral">
+                You've reached the end of the movie list
+              </span>
+            </div>
+          </div>
+        )}
 
       {/* MOVIES count */}
       {!loading && !error && moviesWithShowtimes.length > 0 && (

@@ -23,7 +23,7 @@ const useMovies = (options = {}) => {
         });
 
         const response = await api.get(`movies/?${queryParams}`);
-        setMovies(response.data);
+        setMovies(response.data.results || response.data);
       } catch (err) {
         setError(err.response?.data?.message || 'Failed to fetch movies');
         console.error('Error fetching movies:', err);
@@ -42,7 +42,7 @@ const useMovies = (options = {}) => {
       const response = await api.get(
         `movies/search/?search=${encodeURIComponent(searchQuery)}`
       );
-      setMovies(response.data);
+      setMovies(response.data.results || response.data);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to search movies');
       console.error('Error searching movies:', err);

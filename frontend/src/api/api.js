@@ -74,6 +74,51 @@ export const movieAPI = {
     api.get(`genres/${genreId}/movies/?limit=${limit}&detail=${detail}`),
 };
 
+// MOVIE api functions CRUD
+export const movieAPIcrud = {
+  // GET all movies (summary by default)
+  getMovies: (detail = 'summary') => api.get(`movies/?detail=${detail}`),
+
+  // GET movies by genre with detail mode
+  getMoviesByGenre: (genreId, detail = 'summary') =>
+    api.get(`movies/?genre=${genreId}&detail=${detail}`),
+
+  // GET movie by ID with full details
+  getMovieDetails: (id, detail = 'full') =>
+    api.get(`movies/${id}/?detail=${detail}`),
+
+  // SEARCH movies
+  searchMovies: (query) =>
+    api.get(`movies/search/?search=${encodeURIComponent(query)}`),
+
+  // CREATE new movie
+  createMovie: (movieData) =>
+    api.post('movies/', movieData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    }),
+
+  // UPDATE movie (full update)
+  updateMovie: (id, movieData) =>
+    api.put(`movies/${id}/`, movieData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    }),
+
+  // PARTIAL UPDATE movie
+  updateMoviePartial: (id, movieData) =>
+    api.patch(`movies/${id}/`, movieData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    }),
+
+  // DELETE movie
+  deleteMovie: (id) => api.delete(`movies/${id}/`),
+};
+
 // GENRE api functions
 export const genreAPI = {
   // GET all genres

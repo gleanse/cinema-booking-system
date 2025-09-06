@@ -1,15 +1,46 @@
-import { useCallback, useState, useMemo } from 'react';
+import { useCallback, useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MovieGrid from '../components/MovieGrid';
 import SearchBar from '../components/SearchBar';
-import useMovies from '../hooks/useMovies';
+import useMoviesLazyLoading from '../hooks/useMoviesLazyLoading';
 import { HiOutlineFilm, HiOutlineClock } from 'react-icons/hi2';
 
 const MoviesPage = () => {
   const navigate = useNavigate();
-  const { movies, loading, error, refetch, searchMovies } = useMovies();
+  // changed hook and added new properties
+  const {
+    movies,
+    loading,
+    loadingMore,
+    hasMore,
+    loadMore,
+    error,
+    refetch,
+    searchMovies,
+  } = useMoviesLazyLoading();
+
   const [currentSearch, setCurrentSearch] = useState('');
   const [activeTab, setActiveTab] = useState('showing'); // 'showing' or 'coming'
+
+  // infinite scroll detection
+  useEffect(() => {
+    const handleScroll = () => {
+      // check if user scrolled near bottom
+      const scrollTop = window.scrollY;
+      const windowHeight = window.innerHeight;
+      const documentHeight = document.documentElement.scrollHeight;
+
+      // trigger when 200px from bottom
+      if (scrollTop + windowHeight >= documentHeight - 200) {
+        if (!loadingMore && hasMore && !currentSearch) {
+          loadMore();
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [loadMore, loadingMore, hasMore, currentSearch]);
 
   const handleMovieClick = (movie) => {
     console.log('Selected movie:', movie);
@@ -182,6 +213,34 @@ const MoviesPage = () => {
         emptyMessage={getEmptyMessage()}
         showBuyButton={false}
       />
+
+      {/* loading more indicator */}
+      {loadingMore && (
+        <div className="mt-8 text-center">
+          <div className="inline-flex items-center px-4 py-2 bg-primary/10 rounded-lg">
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary mr-2"></div>
+            <span className="text-primary font-medium">
+              Loading more movies...
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* end of results indicator */}
+      {!loading &&
+        !loadingMore &&
+        !error &&
+        getCurrentMovies().length > 0 &&
+        !hasMore &&
+        !currentSearch && (
+          <div className="mt-8 text-center">
+            <div className="inline-flex items-center px-4 py-2 bg-neutral/10 rounded-lg">
+              <span className="text-neutral">
+                You've reached the end of the movie list
+              </span>
+            </div>
+          </div>
+        )}
 
       {!loading && !error && getCurrentMovies().length > 0 && (
         <div className="mt-8 text-center">
