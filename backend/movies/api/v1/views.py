@@ -55,18 +55,12 @@ class GenreListView(APIView):
         
         if include_count:
             genres = Genre.objects.annotate(movie_count=Count('movies'))
+            serializer = GenreMovieCountSerializer(genres, many=True)
         else:
             genres = Genre.objects.all()
+            serializer = GenreSerializer(genres, many=True)
 
-        paginator = PageNumberPagination()
-        page = paginator.paginate_queryset(genres, request)
-
-        if include_count:
-            serializer = GenreMovieCountSerializer(page, many=True)
-        else:
-            serializer = GenreSerializer(page, many=True)
-
-        return paginator.get_paginated_response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 # DETAIL view
 # explanation: see docs/API.md -> GENRE class views > DETAIL genre view endpoints
 class GenreDetailView(BaseDetailView):
