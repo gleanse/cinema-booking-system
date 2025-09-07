@@ -39,7 +39,6 @@ const Sidebar = ({ isCollapsed: propIsCollapsed, onToggleCollapse }) => {
       name: 'Movies',
       icon: FaVideo,
       path: '/admin/movies',
-      comingSoon: true,
     },
     {
       name: 'Genres',

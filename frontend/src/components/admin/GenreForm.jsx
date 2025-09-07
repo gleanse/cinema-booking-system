@@ -149,7 +149,7 @@ const GenreForm = ({ genre = null, onSubmit, onCancel, loading = false }) => {
           <button
             onClick={onCancel}
             disabled={loading}
-            className="cursor-pointer w-full sm:w-auto px-6 py-2 bg-neutral text-white font-medium rounded-md hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-neutral focus:ring-offset-2 transition-all disabled:opacity-50"
+            className="cursor-pointer w-full sm:w-auto px-6 py-2 bg-accent text-white font-medium rounded-md hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 transition-all disabled:opacity-50"
           >
             Cancel
           </button>

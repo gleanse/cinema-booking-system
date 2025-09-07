@@ -6,9 +6,11 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import MovieDetailsPage from './pages/MovieDetailPage';
 import MoviesPage from './pages/MoviesPage';
-import GenresPage from './pages/admin/GenresPage';
 import ProtectedRoute from './components/admin/ProtectedRoute';
+// ADMIN PAGES
 import Sidebar from './components/admin/Sidebar';
+import GenresPage from './pages/admin/GenresPage';
+import AdminMoviesPage from './pages/admin/AdminMoviesPage';
 
 function App() {
   const location = useLocation();
@@ -54,6 +56,7 @@ function App() {
                   <div className="p-6 min-h-full">
                     <Routes>
                       <Route path="genres" element={<GenresPage />} />
+                      <Route path="movies" element={<AdminMoviesPage />} />
                     </Routes>
                   </div>
                 </ProtectedRoute>
