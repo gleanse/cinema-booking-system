@@ -2,12 +2,19 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from utils.base_views import BaseDetailView
-from showtimes.models import Showtime
-from .serializers import ShowtimeSerializer, ShowtimeListSerializer, ShowtimeDetailSerializer
+from showtimes.models import Showtime, Cinema, ScreeningRoom
+from .serializers import (
+    ShowtimeSerializer, 
+    ShowtimeListSerializer, 
+    ShowtimeDetailSerializer, 
+    CinemaSerializer, 
+    CinemaDetailSerializer,
+    ScreeningRoomSerializer
+)
 from config.permissions import StaffUserOnly, AllowAny
 from config.throttles import AdminOperationThrottle, PublicEndpointThrottle
 
-# LIST VIEW
+# SHOWTIME VIEWS
 class ShowtimeListView(APIView):
     def get_throttles(self):
         if self.request.method == 'GET':
@@ -40,7 +47,6 @@ class ShowtimeListView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-# DETAIL VIEW
 class ShowtimeDetailView(BaseDetailView):
     model = Showtime
     not_found_message = "Showtime not found"
@@ -84,4 +90,143 @@ class ShowtimeDetailView(BaseDetailView):
     def delete(self, request, pk):
         showtime = self.get_object(pk)
         showtime.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    
+# CINEMA VIEWS
+class CinemaListView(APIView):
+    def get_throttles(self):
+        if self.request.method == "GET":
+            return [PublicEndpointThrottle()]
+        return [AdminOperationThrottle()]
+
+    def get_permissions(self):
+        if self.request.method == "GET":
+            return [AllowAny()]
+        return [StaffUserOnly()]
+
+    def get(self, request):
+        cinemas = Cinema.objects.all()
+        mode = request.query_params.get("detail", "summary").lower()
+
+        if mode == "full":
+            serializer = CinemaDetailSerializer(cinemas, many=True)
+        else:
+            serializer = CinemaSerializer(cinemas, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        serializer = CinemaSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class CinemaDetailView(BaseDetailView):
+    model = Cinema
+    not_found_message = "Cinema not found"
+
+    def get_throttles(self):
+        if self.request.method == "GET":
+            return [PublicEndpointThrottle()]
+        return [AdminOperationThrottle()]
+
+    def get_permissions(self):
+        if self.request.method == "GET":
+            return [AllowAny()]
+        return [StaffUserOnly()]
+
+    def get(self, request, pk):
+        cinema = self.get_object(pk)
+        mode = request.query_params.get("detail", "summary").lower()
+
+        if mode == "full":
+            serializer = CinemaDetailSerializer(cinema)
+        else:
+            serializer = CinemaSerializer(cinema)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def patch(self, request, pk):
+        cinema = self.get_object(pk)
+        serializer = CinemaSerializer(cinema, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def put(self, request, pk):
+        cinema = self.get_object(pk)
+        serializer = CinemaSerializer(cinema, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+        cinema = self.get_object(pk)
+        cinema.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+# SCREENING ROOM VIEWS
+class ScreeningRoomListView(APIView):
+    def get_throttles(self):
+        if self.request.method == "GET":
+            return [PublicEndpointThrottle()]
+        return [AdminOperationThrottle()]
+
+    def get_permissions(self):
+        if self.request.method == "GET":
+            return [AllowAny()]
+        return [StaffUserOnly()]
+
+    def get(self, request):
+        rooms = ScreeningRoom.objects.all()
+        serializer = ScreeningRoomSerializer(rooms, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        serializer = ScreeningRoomSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ScreeningRoomDetailView(BaseDetailView):
+    model = ScreeningRoom
+    not_found_message = "Screening room not found"
+
+    def get_throttles(self):
+        if self.request.method == "GET":
+            return [PublicEndpointThrottle()]
+        return [AdminOperationThrottle()]
+
+    def get_permissions(self):
+        if self.request.method == "GET":
+            return [AllowAny()]
+        return [StaffUserOnly()]
+
+    def get(self, request, pk):
+        room = self.get_object(pk)
+        serializer = ScreeningRoomSerializer(room)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def patch(self, request, pk):
+        room = self.get_object(pk)
+        serializer = ScreeningRoomSerializer(room, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def put(self, request, pk):
+        room = self.get_object(pk)
+        serializer = ScreeningRoomSerializer(room, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+        room = self.get_object(pk)
+        room.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
