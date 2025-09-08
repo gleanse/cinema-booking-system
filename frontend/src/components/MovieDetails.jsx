@@ -277,11 +277,11 @@ const MovieDetails = ({ movie, showtimes, showtimesLoading, onBuyTicket }) => {
                                       {formatShowTime(showtime.show_time)}
                                     </div>
 
-                                    {showtime.theater_name && (
+                                    {showtime.room.name && (
                                       <div className="text-xs text-neutral mt-1 flex items-center justify-center space-x-1">
                                         <HiOutlineBuildingOffice2 className="h-3 w-3" />
                                         <span className="truncate">
-                                          {showtime.theater_name}
+                                          {showtime.room.name}
                                         </span>
                                       </div>
                                     )}
@@ -292,9 +292,9 @@ const MovieDetails = ({ movie, showtimes, showtimesLoading, onBuyTicket }) => {
                                       </div>
                                     )}
 
-                                    {showtime.available_seats !== undefined && (
+                                    {showtime.room?.capacity && (
                                       <div className="text-xs text-neutral mt-1">
-                                        {showtime.available_seats} seats left
+                                        {showtime.room.capacity} seats
                                       </div>
                                     )}
                                   </div>
