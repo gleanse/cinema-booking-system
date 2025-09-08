@@ -1,18 +1,23 @@
 from rest_framework import serializers
 from movies.models import Genre, Movie
-from showtimes.models import Showtime
+from showtimes.models import Showtime, ScreeningRoom
 from django.utils import timezone
 
+class ScreeningRoomSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ScreeningRoom
+        fields = ['id', 'name', 'capacity', 'cinema'] 
 
 class ShowtimeSerializer(serializers.ModelSerializer):
+    room = ScreeningRoomSerializer(read_only=True)
+
     class Meta:
         model = Showtime
         fields = [
             'id',
             'show_date',
             'show_time',
-            'theater_name',
-            'available_seats',
+            'room',
             'ticket_price',
             'is_active']
 

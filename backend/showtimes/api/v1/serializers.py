@@ -42,7 +42,7 @@ class ShowtimeSerializer(serializers.ModelSerializer):
 
 class ShowtimeListSerializer(serializers.ModelSerializer):
     movie_title = serializers.CharField(source='movie.title', read_only=True)
-    room_name = serializers.CharField(source="room.name", read_only=True)
+    room = ScreeningRoomSerializer(read_only=True)
 
     class Meta:
         model = Showtime
@@ -51,7 +51,7 @@ class ShowtimeListSerializer(serializers.ModelSerializer):
             "movie_title",
             "show_date",
             "show_time",
-            "room_name",
+            "room",
             "ticket_price",
         ]
 
