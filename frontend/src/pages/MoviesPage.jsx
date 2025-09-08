@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import MovieGrid from '../components/MovieGrid';
 import SearchBar from '../components/SearchBar';
 import useMoviesLazyLoading from '../hooks/useMoviesLazyLoading';
+import { usePolling } from '../hooks/usePolling';
 import { HiOutlineFilm, HiOutlineClock } from 'react-icons/hi2';
 
 const MoviesPage = () => {
@@ -21,6 +22,12 @@ const MoviesPage = () => {
 
   const [currentSearch, setCurrentSearch] = useState('');
   const [activeTab, setActiveTab] = useState('showing'); // 'showing' or 'coming'
+
+  usePolling(() => {
+    if (!currentSearch) {
+      refetch();
+    }
+  }, 10000);
 
   // infinite scroll detection
   useEffect(() => {

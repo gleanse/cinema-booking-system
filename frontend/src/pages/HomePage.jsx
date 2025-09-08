@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import MovieGrid from '../components/MovieGrid';
 import SearchBar from '../components/SearchBar';
 import useMoviesLazyLoading from '../hooks/useMoviesLazyLoading';
+import { usePolling } from '../hooks/usePolling';
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -16,7 +17,14 @@ const HomePage = () => {
     refetch,
     searchMovies,
   } = useMoviesLazyLoading();
+
   const [currentSearch, setCurrentSearch] = useState('');
+
+  usePolling(() => {
+    if (!currentSearch) {
+      refetch();
+    }
+  }, 10000);
 
   const handleMovieClick = (movie) => {
     console.log('Selected movie:', movie);
