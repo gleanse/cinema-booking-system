@@ -1,5 +1,6 @@
 import { useCallback, useState, useMemo, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { FaFilm, FaExclamationTriangle, FaSearch, FaSpinner } from 'react-icons/fa';
 import MovieGrid from '../components/MovieGrid';
 import SearchBar from '../components/SearchBar';
 import useMoviesLazyLoading from '../hooks/useMoviesLazyLoading';
@@ -78,13 +79,6 @@ const HomePage = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [loadMore, loadingMore, hasMore, currentSearch]);
 
-  const getEmptyMessage = () => {
-    if (currentSearch) {
-      return `No movies with showtimes found for "${currentSearch}"`;
-    }
-    return 'No movies with showtimes available at the moment';
-  };
-
   return (
     <div className="container mx-auto px-4 py-6">
       <div className="mb-6 sm:mb-8">
@@ -113,13 +107,16 @@ const HomePage = () => {
       {error && (
         <div className="mb-6">
           <div className="bg-accent/10 border border-accent/20 rounded-lg p-4 flex items-center justify-between">
-            <div>
-              <p className="text-accent font-medium">Failed to load movies</p>
-              <p className="text-neutral text-sm">{error}</p>
+            <div className="flex items-center">
+              <FaExclamationTriangle className="h-5 w-5 text-accent mr-3" />
+              <div>
+                <p className="text-accent font-medium">Failed to load movies</p>
+                <p className="text-neutral text-sm">{error}</p>
+              </div>
             </div>
             <button
               onClick={handleRetry}
-              className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/80 transition-colors"
+              className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/80 transition-colors ml-4"
             >
               Retry
             </button>
@@ -127,19 +124,57 @@ const HomePage = () => {
         </div>
       )}
 
-      <MovieGrid
-        movies={moviesWithShowtimes}
-        loading={loading}
-        error={null}
-        onMovieClick={handleMovieClick}
-        emptyMessage={getEmptyMessage()}
-      />
+      {(loading || moviesWithShowtimes.length > 0) && (
+        <MovieGrid
+          movies={moviesWithShowtimes}
+          loading={loading}
+          error={null}
+          onMovieClick={handleMovieClick}
+          emptyMessage="" // empty message handled by page now
+        />
+      )}
+
+      {/* EMPTY state*/}
+      {!loading && moviesWithShowtimes.length === 0 && (
+        <div className="text-center py-12">
+          <div className="max-w-md mx-auto">
+            {currentSearch ? (
+              <>
+                <FaSearch className="h-16 w-16 text-neutral/40 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-foreground mb-2">
+                  No movies found
+                </h3>
+                <p className="text-neutral mb-2">
+                  No movies with showtimes found for "{currentSearch}"
+                </p>
+                <p className="text-neutral text-sm">
+                  Try a different search term or check back later for new
+                  showtimes
+                </p>
+              </>
+            ) : (
+              <>
+                <FaFilm className="h-16 w-16 text-neutral/40 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-foreground mb-2">
+                  No movies available
+                </h3>
+                <p className="text-neutral">
+                  No movies with showtimes available at the moment
+                </p>
+                <p className="text-neutral text-sm mt-2">
+                  Check back later for new movie showtimes
+                </p>
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* loading more indicator */}
       {loadingMore && (
         <div className="mt-8 text-center">
           <div className="inline-flex items-center px-4 py-2 bg-primary/10 rounded-lg">
-            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary mr-2"></div>
+            <FaSpinner className="h-4 w-4 text-primary animate-spin mr-2" />
             <span className="text-primary font-medium">
               Loading more movies...
             </span>

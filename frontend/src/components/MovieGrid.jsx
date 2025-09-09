@@ -11,8 +11,12 @@ const MovieGrid = ({
 }) => {
   if (loading) {
     return (
-      <div className="flex justify-center items-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 sm:h-12 sm:w-12 border-b-2 border-primary"></div>
+      <div
+        className={`grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 md:gap-5 lg:grid-cols-5 xl:grid-cols-6 ${className}`}
+      >
+        {[...Array(12)].map((_, index) => (
+          <MovieCard key={index} loading={true} showBuyButton={showBuyButton} />
+        ))}
       </div>
     );
   }

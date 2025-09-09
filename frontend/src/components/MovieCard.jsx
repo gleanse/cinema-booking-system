@@ -9,6 +9,7 @@ const MovieCard = ({
   onClick,
   className = '',
   showBuyButton = true,
+  loading = false,
 }) => {
   const handleClick = () => {
     if (onClick) {
@@ -38,6 +39,39 @@ const MovieCard = ({
       'http://localhost:8000'
     }${poster}`;
   };
+
+  // MOVIE CARD SKELETON
+  // i remove the other skeleton part since the data the i only wanna render is on the list endpoints which is minimal detail
+  if (loading) {
+    return (
+      <div
+        className={`bg-background rounded-xl shadow-form border border-inputbrdr overflow-hidden animate-pulse w-full max-w-sm mx-auto ${className}`}
+      >
+        {/* POSTER SKELETON */}
+        <div className="relative aspect-[2/3] bg-neutral/20 overflow-hidden"></div>
+
+        <div className="p-2 sm:p-4 space-y-1 sm:space-y-3">
+          {/* TITLE SKELETON */}
+          <div className="h-4 bg-neutral/25 rounded w-3/4"></div>
+          
+          {/* GENRE SKELETON */}
+          <div className="h-3 bg-neutral/15 rounded w-1/2"></div>
+          
+          {/* DURATION AND DATE SKELETON */}
+          <div className="flex flex-col space-y-1 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+            <div className="h-3 bg-neutral/15 rounded w-1/3"></div>
+          </div>
+          
+          {/* BUTTON SKELETON */}
+          {showBuyButton && (
+            <div className="mt-4 pt-3 border-t border-inputbrdr">
+              <div className="h-8 bg-neutral/20 rounded w-full"></div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div

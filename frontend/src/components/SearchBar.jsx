@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { HiOutlineMagnifyingGlass, HiOutlineXMark } from 'react-icons/hi2';
+import { FaSpinner } from 'react-icons/fa';
 
 const SearchBar = ({
   onSearch,
@@ -36,7 +37,7 @@ const SearchBar = ({
       <div className="relative">
         <div className="absolute inset-y-0 left-0 pl-2 sm:pl-3 flex items-center pointer-events-none">
           {isSearching ? (
-            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
+            <FaSpinner className="h-5 w-5 text-primary animate-spin mr-2" />
           ) : (
             <HiOutlineMagnifyingGlass className="h-4 w-4 sm:h-5 sm:w-5 text-neutral" />
           )}

@@ -36,39 +36,60 @@ const MovieDetailsPage = () => {
       <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-8">
           <div className="mb-6">
-            <div className="h-10 w-24 bg-neutral/20 rounded-lg animate-pulse" />
+            <div className="h-6 w-24 bg-neutral/20 rounded animate-pulse"></div>
           </div>
+
+          {/* SKELETON */}
           <div className="grid lg:grid-cols-3 gap-8">
+            {/* POSTER */}
             <div className="lg:col-span-1">
-              <div className="aspect-[2/3] bg-neutral/20 rounded-xl animate-pulse" />
+              <div className="aspect-[2/3] bg-neutral/20 rounded-xl animate-pulse"></div>
             </div>
+
             <div className="lg:col-span-2 space-y-6">
+              {/* TITLE AND GENRE */}
               <div className="space-y-3">
-                <div className="h-10 bg-neutral/20 rounded animate-pulse" />
-                <div className="h-6 w-32 bg-neutral/20 rounded animate-pulse" />
+                <div className="h-10 bg-neutral/25 rounded animate-pulse"></div>
+                <div className="h-6 w-32 bg-neutral/20 rounded animate-pulse"></div>
               </div>
 
+              {/* Details grid */}
               <div className="grid md:grid-cols-2 gap-4">
                 {[...Array(4)].map((_, i) => (
-                  <div
-                    key={i}
-                    className="h-16 bg-neutral/20 rounded animate-pulse"
-                  />
+                  <div key={i} className="space-y-2">
+                    <div className="h-4 bg-neutral/20 rounded animate-pulse w-16"></div>
+                    <div className="h-5 bg-neutral/15 rounded animate-pulse w-24"></div>
+                  </div>
                 ))}
               </div>
 
+              {/* DESCRIPTION */}
               <div className="space-y-3">
-                <div className="h-6 w-24 bg-neutral/20 rounded animate-pulse" />
+                <div className="h-6 w-24 bg-neutral/20 rounded animate-pulse"></div>
                 <div className="space-y-2">
-                  <div className="h-4 bg-neutral/20 rounded animate-pulse" />
-                  <div className="h-4 bg-neutral/20 rounded animate-pulse" />
-                  <div className="h-4 w-3/4 bg-neutral/20 rounded animate-pulse" />
+                  <div className="h-4 bg-neutral/15 rounded animate-pulse"></div>
+                  <div className="h-4 bg-neutral/15 rounded animate-pulse"></div>
+                  <div className="h-4 bg-neutral/15 rounded animate-pulse w-3/4"></div>
                 </div>
               </div>
 
+              {/* BUTTONS */}
               <div className="flex gap-4">
-                <div className="h-12 w-32 bg-neutral/20 rounded-lg animate-pulse" />
-                <div className="h-12 w-36 bg-neutral/20 rounded-lg animate-pulse" />
+                <div className="h-12 w-32 bg-neutral/20 rounded-lg animate-pulse"></div>
+                <div className="h-12 w-36 bg-neutral/20 rounded-lg animate-pulse"></div>
+              </div>
+
+              {/* SHOWTIMES section */}
+              <div className="pt-6 border-t border-neutral/20 space-y-4">
+                <div className="h-6 w-32 bg-neutral/20 rounded animate-pulse"></div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {[...Array(8)].map((_, i) => (
+                    <div
+                      key={i}
+                      className="h-12 bg-neutral/15 rounded-lg animate-pulse"
+                    ></div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
