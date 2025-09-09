@@ -51,7 +51,8 @@ const HomePage = () => {
     if (!movies.length) return [];
 
     return movies.filter(
-      (movie) => movie.showtimes && movie.showtimes.length > 0
+      (movie) =>
+        movie.showtimes && movie.is_active && movie.showtimes.length > 0
     );
   }, [movies]);
 
