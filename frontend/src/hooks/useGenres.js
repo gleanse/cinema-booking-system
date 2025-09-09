@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { genreAPI } from '../api/api';
+
 export const useGenres = () => {
   const [genres, setGenres] = useState([]);
   const [loading, setLoading] = useState(false);

@@ -151,8 +151,67 @@ export const showtimeAPI = {
   getShowtimeDetails: (id, detail = 'summary') =>
     api.get(`showtimes/${id}/?detail=${detail}`),
 
-  // GET showtimes for a specific movie (you might need to add this endpoint)
+  // GET showtimes for a specific movie
   getMovieShowtimes: (movieId) => api.get(`showtimes/?movie=${movieId}`),
+
+  // CREATE new showtime
+  createShowtime: (showtimeData) => api.post('showtimes/', showtimeData),
+
+  // UPDATE showtime (full update)
+  updateShowtime: (id, showtimeData) =>
+    api.put(`showtimes/${id}/`, showtimeData),
+
+  // PARTIAL UPDATE showtime
+  updateShowtimePartial: (id, showtimeData) =>
+    api.patch(`showtimes/${id}/`, showtimeData),
+
+  // DELETE showtime
+  deleteShowtime: (id) => api.delete(`showtimes/${id}/`),
+};
+
+// CINEMA api functions (CRUD)
+export const cinemaAPI = {
+  // GET all cinemas (summary by default)
+  getCinemas: (detail = 'summary') => api.get(`cinemas/?detail=${detail}`),
+
+  // GET cinema by ID with detail mode support
+  getCinemaDetails: (id, detail = 'summary') =>
+    api.get(`cinemas/${id}/?detail=${detail}`),
+
+  // CREATE new cinema
+  createCinema: (cinemaData) => api.post('cinemas/', cinemaData),
+
+  // UPDATE cinema (full update)
+  updateCinema: (id, cinemaData) => api.put(`cinemas/${id}/`, cinemaData),
+
+  // PARTIAL UPDATE cinema
+  updateCinemaPartial: (id, cinemaData) =>
+    api.patch(`cinemas/${id}/`, cinemaData),
+
+  // DELETE cinema
+  deleteCinema: (id) => api.delete(`cinemas/${id}/`),
+};
+
+// SCREENING ROOM api functions (CRUD)
+export const screeningRoomAPI = {
+  // GET all screening rooms
+  getScreeningRooms: () => api.get('rooms/'),
+
+  // GET screening room by ID
+  getScreeningRoomDetails: (id) => api.get(`rooms/${id}/`),
+
+  // CREATE new screening room
+  createScreeningRoom: (roomData) => api.post('rooms/', roomData),
+
+  // UPDATE screening room (full update)
+  updateScreeningRoom: (id, roomData) => api.put(`rooms/${id}/`, roomData),
+
+  // PARTIAL UPDATE screening room
+  updateScreeningRoomPartial: (id, roomData) =>
+    api.patch(`rooms/${id}/`, roomData),
+
+  // DELETE screening room
+  deleteScreeningRoom: (id) => api.delete(`rooms/${id}/`),
 };
 
 export const tokenUtils = {
