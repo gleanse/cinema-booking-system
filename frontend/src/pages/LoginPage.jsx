@@ -26,7 +26,7 @@ const LoginPage = ({ onLoginSuccess }) => {
           if (result.success) {
             console.log('User already authenticated, redirecting...');
             // if admin already authenticated or have existing token no need to show login form again
-            navigate('/admin/genres', { replace: true });
+            navigate('/admin/movies', { replace: true });
           }
         } catch (err) {
           console.log('Invalid token found, clearing and staying on login');
@@ -37,7 +37,7 @@ const LoginPage = ({ onLoginSuccess }) => {
 
     checkAuthAndRedirect();
   }, [navigate, fetchCurrentUser]);
-// FIXED ISSUE no more bug
+  // FIXED ISSUE no more bug
   useEffect(() => {
     const handleKeyPress = (e) => {
       if (e.key === 'Enter' && !loading) {
@@ -72,9 +72,10 @@ const LoginPage = ({ onLoginSuccess }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const trimmedUsername = formData.username.trim();
 
     const result = await login(
-      formData.username,
+      trimmedUsername,
       formData.password,
       formData.rememberMe
     );
@@ -91,7 +92,7 @@ const LoginPage = ({ onLoginSuccess }) => {
       }
 
       // TODO: change this when dashboard is available
-      navigate('/admin/genres');
+      navigate('/admin/movies');
     }
   };
 
