@@ -1,4 +1,4 @@
-import { useCallback, useState, useMemo, useEffect } from 'react';
+import { useCallback, useState, useMemo, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MovieGrid from '../components/MovieGrid';
 import SearchBar from '../components/SearchBar';
@@ -22,6 +22,7 @@ const MoviesPage = () => {
 
   const [currentSearch, setCurrentSearch] = useState('');
   const [activeTab, setActiveTab] = useState('showing'); // 'showing' or 'coming'
+  const isInitialMount = useRef(true);
 
   usePolling(() => {
     if (!currentSearch) {
@@ -56,6 +57,10 @@ const MoviesPage = () => {
 
   const handleSearch = useCallback(
     (searchTerm) => {
+      if (isInitialMount.current) {
+        isInitialMount.current = false;
+        return;
+      }
       setCurrentSearch(searchTerm.trim());
       if (searchTerm.trim()) {
         searchMovies(searchTerm);
