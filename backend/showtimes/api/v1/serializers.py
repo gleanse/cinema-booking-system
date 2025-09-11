@@ -96,8 +96,6 @@ class CinemaSerializer(serializers.ModelSerializer):
             "id",
             "name",
             "location",
-            "created_at",
-            "updated_at",
         ]
 
 class CinemaDetailSerializer(serializers.ModelSerializer):
@@ -109,7 +107,5 @@ class CinemaDetailSerializer(serializers.ModelSerializer):
             "id",
             "name",
             "location",
-            "created_at",
-            "updated_at",
             "screening_rooms",
         ]
