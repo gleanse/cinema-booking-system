@@ -11,6 +11,7 @@ import ProtectedRoute from './components/admin/ProtectedRoute';
 import Sidebar from './components/admin/Sidebar';
 import GenresPage from './pages/admin/GenresPage';
 import AdminMoviesPage from './pages/admin/AdminMoviesPage';
+import AdminCinemasPage from './pages/admin/AdminCinemasPage';
 
 function App() {
   const location = useLocation();
@@ -57,6 +58,7 @@ function App() {
                     <Routes>
                       <Route path="genres" element={<GenresPage />} />
                       <Route path="movies" element={<AdminMoviesPage />} />
+                      <Route path="cinemas" element={<AdminCinemasPage />} />
                     </Routes>
                   </div>
                 </ProtectedRoute>

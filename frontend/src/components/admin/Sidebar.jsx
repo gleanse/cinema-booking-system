@@ -57,6 +57,11 @@ const Sidebar = ({ isCollapsed: propIsCollapsed, onToggleCollapse }) => {
       path: '/admin/settings',
       comingSoon: true,
     },
+    {
+      name: 'Cinemas',
+      icon: FaCog, // temporary ICON, TODO: change it
+      path: '/admin/cinemas',
+    },
   ];
 
   const isActive = (path) => {
