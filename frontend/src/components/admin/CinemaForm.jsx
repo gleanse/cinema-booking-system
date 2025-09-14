@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import ConfirmationModal from './ConfirmationModal';
+import { GiTheater } from 'react-icons/gi';
 import {
   FaSpinner,
   FaBuilding,
   FaMapMarkerAlt,
-  FaChair,
   FaPlus,
   FaTimes,
   FaEdit,
@@ -158,7 +158,7 @@ const CinemaForm = ({
   const isEditing = !!cinema;
 
   return (
-    <div className="bg-background border border-inputbrdr rounded-lg shadow-form p-4 sm:p-6">
+    <div className="bg-background border border-inputbrdr rounded-lg shadow-form-s p-4 sm:p-6">
       <div className="mb-6">
         <h3 className="text-lg sm:text-xl font-semibold text-foreground">
           {isEditing ? 'Edit Cinema' : 'Create New Cinema'}
@@ -235,7 +235,7 @@ const CinemaForm = ({
         <div className="border border-inputbrdr rounded-lg p-4">
           <div className="flex items-center justify-between mb-4">
             <h4 className="text-sm font-medium text-foreground flex items-center">
-              <FaChair className="h-4 w-4 mr-2 text-primary" />
+              <GiTheater className="h-4 w-4 mr-2" />
               Screening Rooms
             </h4>
             <span className="text-xs text-neutral">
@@ -338,25 +338,25 @@ const CinemaForm = ({
                         </span>
                       </div>
                       <div className="flex gap-2">
+                        {(user?.is_staff || user?.is_superuser) && (
+                          <button
+                            type="button"
+                            onClick={() => startEditingRoom(index)}
+                            className="cursor-pointer text-editicon hover:text-editicon/80 transition-colors"
+                            title="Edit room"
+                          >
+                            <FaEdit className="h-4 w-4" />
+                          </button>
+                        )}
                         {user?.is_superuser && (
-                          <>
-                            <button
-                              type="button"
-                              onClick={() => startEditingRoom(index)}
-                              className="cursor-pointer text-editicon hover:text-editicon/80 transition-colors"
-                              title="Edit room"
-                            >
-                              <FaEdit className="h-4 w-4" />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => confirmRemoveRoom(index)}
-                              className="cursor-pointer text-accent hover:text-accent/80 transition-colors"
-                              title="Remove room"
-                            >
-                              <FaTimes className="h-4 w-4" />
-                            </button>
-                          </>
+                          <button
+                            type="button"
+                            onClick={() => confirmRemoveRoom(index)}
+                            className="cursor-pointer text-accent hover:text-accent/80 transition-colors"
+                            title="Remove room"
+                          >
+                            <FaTimes className="h-4 w-4" />
+                          </button>
                         )}
                       </div>
                     </>

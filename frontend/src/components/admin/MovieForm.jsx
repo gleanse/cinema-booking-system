@@ -182,7 +182,7 @@ const MovieForm = ({ movie = null, onSubmit, onCancel, loading = false }) => {
   const hasExistingPoster = movie?.poster && !formData.remove_poster;
 
   return (
-    <div className="bg-background border border-inputbrdr rounded-lg shadow-form p-4 sm:p-6">
+    <div className="bg-background border border-inputbrdr rounded-lg shadow-form-s p-4 sm:p-6">
       <div className="mb-6">
         <h3 className="text-lg sm:text-xl font-semibold text-foreground">
           {isEditing ? 'Edit Movie' : 'Create New Movie'}

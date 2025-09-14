@@ -3,9 +3,9 @@ import {
   FaTrash,
   FaBuilding,
   FaMapMarkerAlt,
-  FaChair,
   FaSpinner,
 } from 'react-icons/fa';
+import { GiTheater } from 'react-icons/gi';
 
 const CinemaTable = ({
   cinemas = [],
@@ -17,7 +17,7 @@ const CinemaTable = ({
 }) => {
   if (loading) {
     return (
-      <div className="bg-background border border-inputbrdr rounded-lg shadow-form overflow-hidden">
+      <div className="bg-background border border-inputbrdr rounded-lg shadow-form-s overflow-hidden">
         <div className="bg-primary bg-opacity-5 px-4 sm:px-6 py-3 border-b border-inputbrdr">
           <h3 className="text-lg font-medium text-white">Cinemas</h3>
         </div>
@@ -95,7 +95,7 @@ const CinemaTable = ({
   }
 
   return (
-    <div className="bg-background border border-inputbrdr rounded-lg shadow-form overflow-hidden">
+    <div className="bg-background border border-inputbrdr rounded-lg shadow-form-s overflow-hidden">
       <div className="bg-primary bg-opacity-5 px-4 sm:px-6 py-3 border-b border-inputbrdr">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-medium text-white">Cinemas</h3>
@@ -129,7 +129,7 @@ const CinemaTable = ({
                 </div>
                 {cinema.screening_rooms && (
                   <div className="flex items-center text-xs text-neutral mt-1">
-                    <FaChair className="h-3 w-3 mr-1" />
+                    <GiTheater className="h-3 w-3 mr-1" />
                     <span>{cinema.screening_rooms.length} screening rooms</span>
                   </div>
                 )}
@@ -207,11 +207,12 @@ const CinemaTable = ({
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center text-sm text-foreground">
-                    <FaChair className="h-4 w-4 mr-1" />
-                    {(cinema.screening_rooms &&
-                      cinema.screening_rooms.length) ||
-                      0}{' '}
-                    rooms
+                    <GiTheater className="h-4 w-4 mr-1" />
+                    {cinema.screening_rooms?.length
+                      ? `${cinema.screening_rooms.length} ${
+                          cinema.screening_rooms.length === 1 ? 'room' : 'rooms'
+                        }`
+                      : 'No rooms'}
                   </div>
                 </td>
                 {(canModify || canDelete) && (

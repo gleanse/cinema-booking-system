@@ -12,7 +12,7 @@ const GenreTable = ({
 
   if (loading) {
     return (
-      <div className="bg-background border border-inputbrdr rounded-lg shadow-form overflow-hidden">
+      <div className="bg-background border border-inputbrdr rounded-lg shadow-form-s overflow-hidden">
         <div className="bg-primary bg-opacity-5 px-4 sm:px-6 py-3 border-b border-inputbrdr">
           <h3 className="text-lg font-medium text-white">Genres</h3>
         </div>
@@ -108,7 +108,7 @@ const GenreTable = ({
   }
 
   return (
-    <div className="bg-background border border-inputbrdr rounded-lg shadow-form overflow-hidden">
+    <div className="bg-background border border-inputbrdr rounded-lg shadow-form-s overflow-hidden">
       <div className="bg-primary bg-opacity-5 px-4 sm:px-6 py-3 border-b border-inputbrdr">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-medium text-white">Genres</h3>

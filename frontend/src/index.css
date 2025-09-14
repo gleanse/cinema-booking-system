@@ -53,6 +53,10 @@
 
   --shadow-form: 0 20px 50px rgba(0, 28, 85, 0.4);
   --shadow-form-dark: 0 20px 50px rgba(82, 145, 248, 0.2);
+
+  /* SUBTLE VERSION */
+  --shadow-form-sublte: 0 4px 10px rgba(0, 28, 85, 0.12);
+  --shadow-form-dark-sublte: 0 4px 12px rgba(82, 145, 248, 0.15);
 }
 
 .shadow-form {
@@ -61,4 +65,12 @@
 
 .dark .shadow-form {
   box-shadow: var(--shadow-form-dark);
+}
+
+.shadow-form-s {
+  box-shadow: var(--shadow-form-sublte);
+}
+
+.dark .shadow-form-s {
+  box-shadow: var(--shadow-form-dark-sublte);
 }

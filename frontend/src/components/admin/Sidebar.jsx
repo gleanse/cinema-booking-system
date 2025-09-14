@@ -11,6 +11,7 @@ import {
   FaHome,
   FaVideo,
   FaChevronLeft,
+  FaBuilding,
   FaChevronRight,
 } from 'react-icons/fa';
 import { useAuth } from '../../hooks/useAuth';
@@ -46,6 +47,11 @@ const Sidebar = ({ isCollapsed: propIsCollapsed, onToggleCollapse }) => {
       path: '/admin/genres',
     },
     {
+      name: 'Cinemas',
+      icon: FaBuilding,
+      path: '/admin/cinemas',
+    },
+    {
       name: 'Showtimes',
       icon: FaClock,
       path: '/admin/showtimes',
@@ -56,11 +62,6 @@ const Sidebar = ({ isCollapsed: propIsCollapsed, onToggleCollapse }) => {
       icon: FaCog,
       path: '/admin/settings',
       comingSoon: true,
-    },
-    {
-      name: 'Cinemas',
-      icon: FaCog, // temporary ICON, TODO: change it
-      path: '/admin/cinemas',
     },
   ];
 
