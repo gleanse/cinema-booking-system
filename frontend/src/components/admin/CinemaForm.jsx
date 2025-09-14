@@ -294,7 +294,7 @@ const CinemaForm = ({
                         name="name"
                         value={editingRoomData.name}
                         onChange={handleEditRoomChange}
-                        className="flex-1 px-2 py-1 bg-inputbg border border-inputbrdr rounded text-sm"
+                        className="flex-1 px-2 py-1 bg-inputbg text-foreground border border-inputbrdr rounded text-sm"
                         placeholder="Room name"
                       />
                       <input
@@ -304,7 +304,7 @@ const CinemaForm = ({
                         onChange={handleEditRoomChange}
                         min="1"
                         max="1000"
-                        className="w-20 px-2 py-1 bg-inputbg border border-inputbrdr rounded text-sm"
+                        className="w-20 px-2 py-1 bg-inputbg border border-inputbrdr rounded text-sm text-foreground"
                         placeholder="Capacity"
                       />
                       <div className="flex gap-1">

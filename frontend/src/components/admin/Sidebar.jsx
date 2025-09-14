@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import useTheme from '../../hooks/useTheme';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   FaBars,
@@ -13,6 +14,8 @@ import {
   FaChevronLeft,
   FaBuilding,
   FaChevronRight,
+  FaSun,
+  FaMoon,
 } from 'react-icons/fa';
 import { useAuth } from '../../hooks/useAuth';
 import ConfirmationModal from './ConfirmationModal';
@@ -21,6 +24,7 @@ const Sidebar = ({ isCollapsed: propIsCollapsed, onToggleCollapse }) => {
   const [isOpen, setIsOpen] = useState(true);
   const [internalIsCollapsed, setInternalIsCollapsed] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const { isDarkMode, toggleDarkMode } = useTheme();
 
   const isCollapsed =
     propIsCollapsed !== undefined ? propIsCollapsed : internalIsCollapsed;
@@ -198,6 +202,34 @@ const Sidebar = ({ isCollapsed: propIsCollapsed, onToggleCollapse }) => {
           ))}
         </nav>
 
+        {/* THEME TOGGLE BUTTON*/}
+        <div className="p-4 border-t border-inputbrdr flex-shrink-0">
+          <button
+            onClick={toggleDarkMode}
+            className="
+              flex items-center space-x-3 w-full p-3 rounded-lg
+              text-foreground hover:bg-primary/10 hover:text-primary
+              transition-all duration-200 ease-out
+              transform hover:translate-x-1
+              group
+              cursor-pointer
+            "
+            title={isCollapsed ? (isDarkMode ? 'Light mode' : 'Dark mode') : ''}
+          >
+            {isDarkMode ? (
+              <FaSun className="w-5 h-5 transition-transform duration-200 group-hover:scale-110 flex-shrink-0 cursor-pointer" />
+            ) : (
+              <FaMoon className="w-5 h-5 transition-transform duration-200 group-hover:scale-110 flex-shrink-0 cursor-pointer" />
+            )}
+            {!isCollapsed && (
+              <span className="font-medium transition-all duration-200 whitespace-nowrap cursor-pointer">
+                {isDarkMode ? 'Light Mode' : 'Dark Mode'}
+              </span>
+            )}
+          </button>
+        </div>
+        
+        {/* LOGOUT BUTTON */}
         <div className="p-4 border-t border-inputbrdr flex-shrink-0">
           <button
             onClick={handleLogoutClick}
