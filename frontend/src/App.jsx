@@ -1,5 +1,6 @@
 import { Routes, Route, useLocation } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
+import { useScrollToTop } from "./hooks/utils/useScrollToTop";
 import LoginPage from './pages/LoginPage';
 import HomePage from './pages/HomePage';
 import Navbar from './components/Navbar';
@@ -15,10 +16,14 @@ import AdminCinemasPage from './pages/admin/AdminCinemasPage';
 
 function App() {
   const location = useLocation();
+  const scrollRef = useRef(null);
+
   const isAdminPage = location.pathname.startsWith('/admin');
   const isLoginPage = location.pathname === '/login';
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
+  useScrollToTop(scrollRef);
+  
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {!isAdminPage && <Navbar />}
