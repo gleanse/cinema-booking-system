@@ -1,7 +1,7 @@
 import {
   FaEdit,
   FaTrash,
-  FaBuilding,   
+  FaBuilding,
   FaMapMarkerAlt,
   FaChair,
   FaSpinner,
@@ -208,7 +208,10 @@ const CinemaTable = ({
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center text-sm text-foreground">
                     <FaChair className="h-4 w-4 mr-1" />
-                    {cinema.screening_rooms?.length || 0} rooms
+                    {(cinema.screening_rooms &&
+                      cinema.screening_rooms.length) ||
+                      0}{' '}
+                    rooms
                   </div>
                 </td>
                 {(canModify || canDelete) && (

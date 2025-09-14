@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import ConfirmationModal from './ConfirmationModal';
 import {
   FaSpinner,
   FaBuilding,
@@ -6,16 +7,31 @@ import {
   FaChair,
   FaPlus,
   FaTimes,
+  FaEdit,
+  FaCheck,
 } from 'react-icons/fa';
 
-const CinemaForm = ({ cinema = null, onSubmit, onCancel, loading = false }) => {
+const CinemaForm = ({
+  cinema = null,
+  onSubmit,
+  onCancel,
+  loading = false,
+  user = null,
+}) => {
   const [formData, setFormData] = useState({
     name: '',
     location: '',
     screening_rooms: [],
   });
+  const [roomToRemove, setRoomToRemove] = useState(null);
+  const [showRemoveConfirm, setShowRemoveConfirm] = useState(false);
   const [newRoom, setNewRoom] = useState({ name: '', capacity: 50 });
   const [errors, setErrors] = useState({});
+  const [editingRoomIndex, setEditingRoomIndex] = useState(null);
+  const [editingRoomData, setEditingRoomData] = useState({
+    name: '',
+    capacity: 0,
+  });
 
   useEffect(() => {
     if (cinema) {
@@ -56,6 +72,62 @@ const CinemaForm = ({ cinema = null, onSubmit, onCancel, loading = false }) => {
       }));
       setNewRoom({ name: '', capacity: 50 });
     }
+  };
+
+  const confirmRemoveRoom = (index) => {
+    setRoomToRemove(index);
+    setShowRemoveConfirm(true);
+  };
+
+  const handleRemoveRoom = () => {
+    if (roomToRemove !== null) {
+      removeScreeningRoom(roomToRemove);
+      setShowRemoveConfirm(false);
+      setRoomToRemove(null);
+    }
+  };
+
+  const cancelRemoveRoom = () => {
+    setShowRemoveConfirm(false);
+    setRoomToRemove(null);
+  };
+
+  const startEditingRoom = (index) => {
+    const room = formData.screening_rooms[index];
+    setEditingRoomIndex(index);
+    setEditingRoomData({
+      name: room.name,
+      capacity: room.capacity,
+      id: room.id,
+    });
+  };
+
+  const cancelEditingRoom = () => {
+    setEditingRoomIndex(null);
+    setEditingRoomData({ name: '', capacity: 0 });
+  };
+
+  const saveEditedRoom = () => {
+    if (editingRoomIndex !== null) {
+      setFormData((prev) => ({
+        ...prev,
+        screening_rooms: prev.screening_rooms.map((room, index) =>
+          index === editingRoomIndex
+            ? { ...room, ...editingRoomData, id: room.id }
+            : room
+        ),
+      }));
+      setEditingRoomIndex(null);
+      setEditingRoomData({ name: '', capacity: 0 });
+    }
+  };
+
+  const handleEditRoomChange = (e) => {
+    const { name, value } = e.target;
+    setEditingRoomData((prev) => ({
+      ...prev,
+      [name]: name === 'capacity' ? parseInt(value) : value,
+    }));
   };
 
   const removeScreeningRoom = (index) => {
@@ -214,21 +286,81 @@ const CinemaForm = ({ cinema = null, onSubmit, onCancel, loading = false }) => {
                   key={index}
                   className="flex items-center justify-between bg-neutral/5 p-2 rounded"
                 >
-                  <div>
-                    <span className="text-sm font-medium text-foreground">
-                      {room.name}
-                    </span>
-                    <span className="text-xs text-neutral ml-2">
-                      ({room.capacity} seats)
-                    </span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => removeScreeningRoom(index)}
-                    className="text-accent hover:text-accent/80 transition-colors"
-                  >
-                    <FaTimes className="h-4 w-4" />
-                  </button>
+                  {editingRoomIndex === index ? (
+                    // EDIT MODE
+                    <div className="flex-1 flex gap-2 items-center">
+                      <input
+                        type="text"
+                        name="name"
+                        value={editingRoomData.name}
+                        onChange={handleEditRoomChange}
+                        className="flex-1 px-2 py-1 bg-inputbg border border-inputbrdr rounded text-sm"
+                        placeholder="Room name"
+                      />
+                      <input
+                        type="number"
+                        name="capacity"
+                        value={editingRoomData.capacity}
+                        onChange={handleEditRoomChange}
+                        min="1"
+                        max="1000"
+                        className="w-20 px-2 py-1 bg-inputbg border border-inputbrdr rounded text-sm"
+                        placeholder="Capacity"
+                      />
+                      <div className="flex gap-1">
+                        <button
+                          type="button"
+                          onClick={saveEditedRoom}
+                          className="text-green-600 hover:text-green-800 transition-colors"
+                          title="Save changes"
+                        >
+                          <FaCheck className="h-4 w-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={cancelEditingRoom}
+                          className="text-neutral hover:text-foreground transition-colors"
+                          title="Cancel edit"
+                        >
+                          <FaTimes className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    // VIEW MODE
+                    <>
+                      <div>
+                        <span className="text-sm font-medium text-foreground">
+                          {room.name}
+                        </span>
+                        <span className="text-xs text-neutral ml-2">
+                          ({room.capacity} seats)
+                        </span>
+                      </div>
+                      <div className="flex gap-2">
+                        {user?.is_superuser && (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => startEditingRoom(index)}
+                              className="cursor-pointer text-editicon hover:text-editicon/80 transition-colors"
+                              title="Edit room"
+                            >
+                              <FaEdit className="h-4 w-4" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => confirmRemoveRoom(index)}
+                              className="cursor-pointer text-accent hover:text-accent/80 transition-colors"
+                              title="Remove room"
+                            >
+                              <FaTimes className="h-4 w-4" />
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </>
+                  )}
                 </div>
               ))}
             </div>
@@ -263,6 +395,18 @@ const CinemaForm = ({ cinema = null, onSubmit, onCancel, loading = false }) => {
           </button>
         </div>
       </form>
+
+      <ConfirmationModal
+        isOpen={showRemoveConfirm}
+        onClose={cancelRemoveRoom}
+        onConfirm={handleRemoveRoom}
+        title="Remove Screening Room"
+        message="This room will be marked for removal. To permanently delete it, you need to submit the form. Changes are not saved until you click 'Update Cinema'"
+        confirmText="Remove Room"
+        cancelText="Cancel"
+        loading={false}
+        variant="warning"
+      />
     </div>
   );
 };

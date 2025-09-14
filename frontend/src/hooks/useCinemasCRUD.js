@@ -7,7 +7,7 @@ const useCinemasCRUD = (user = null) => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetchCinemas('summary');
+    fetchCinemas('full');
   }, []);
 
   // permission checks

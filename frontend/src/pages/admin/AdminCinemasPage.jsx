@@ -15,6 +15,7 @@ const AdminCinemasPage = () => {
     cinemas,
     loading,
     error,
+    fetchCinemas,
     createCinema,
     updateCinema,
     updateCinemaPartial,
@@ -47,6 +48,7 @@ const AdminCinemasPage = () => {
       }
     };
     loadUser();
+    fetchCinemas('full');
     fetchScreeningRooms();
   }, []);
 
@@ -60,7 +62,7 @@ const AdminCinemasPage = () => {
     setFormLoading(true);
     try {
       if (editingCinema) {
-        const updatedCinema = await updateCinema(editingCinema.id, {
+        await updateCinema(editingCinema.id, {
           name: formData.name,
           location: formData.location,
         });
@@ -83,6 +85,7 @@ const AdminCinemasPage = () => {
 
       setIsFormOpen(false);
       setEditingCinema(null);
+      fetchCinemas('full');
       fetchScreeningRooms();
     } catch (err) {
       console.error('Form submission error:', err);
@@ -94,21 +97,51 @@ const AdminCinemasPage = () => {
   const handleScreeningRoomsUpdate = async (cinemaId, roomsData) => {
     setRoomsLoading(true);
     try {
-      // get current rooms for this cinema
       const currentRooms = getCinemaRooms(cinemaId);
+
+      const roomsToCreate = [];
+      const roomsToUpdate = [];
+      const roomIdsToKeep = [];
 
       for (const room of roomsData) {
         if (!room.id) {
-          await createScreeningRoom({
-            name: room.name,
-            capacity: room.capacity,
-            cinema: cinemaId,
-          });
+          roomsToCreate.push(room);
+        } else {
+          const existingRoom = currentRooms.find((r) => r.id === room.id);
+          if (
+            existingRoom &&
+            (existingRoom.name !== room.name ||
+              existingRoom.capacity !== room.capacity)
+          ) {
+            roomsToUpdate.push(room);
+          }
+          roomIdsToKeep.push(room.id);
         }
       }
 
-      // TODO: handle updates and deletes if needed
-      // this would require more complex logic to track changes
+      const roomsToDelete = currentRooms.filter(
+        (room) => !roomIdsToKeep.includes(room.id)
+      );
+
+      for (const room of roomsToCreate) {
+        await createScreeningRoom({
+          name: room.name,
+          capacity: room.capacity,
+          cinema: cinemaId,
+        });
+      }
+
+      for (const room of roomsToUpdate) {
+        await updateScreeningRoom(room.id, {
+          name: room.name,
+          capacity: room.capacity,
+          cinema: cinemaId,
+        });
+      }
+
+      for (const room of roomsToDelete) {
+        await deleteScreeningRoom(room.id);
+      }
     } catch (err) {
       console.error('Room update error:', err);
       throw err;
@@ -266,6 +299,7 @@ const AdminCinemasPage = () => {
                 onSubmit={handleSubmit}
                 onCancel={handleCancel}
                 loading={formLoading || roomsLoading}
+                user={user}
               />
             </div>
           )}
