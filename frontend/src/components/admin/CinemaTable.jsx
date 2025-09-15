@@ -15,6 +15,11 @@ const CinemaTable = ({
   canModify = false,
   canDelete = false,
 }) => {
+  const handleEditClick = (cinema) => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+    onEdit(cinema);
+  };
+  
   if (loading) {
     return (
       <div className="bg-background border border-inputbrdr rounded-lg shadow-form-s overflow-hidden">
@@ -140,7 +145,7 @@ const CinemaTable = ({
               <div className="flex items-center justify-end space-x-2">
                 {canModify && (
                   <button
-                    onClick={() => onEdit(cinema)}
+                    onClick={() => handleEditClick(cinema)}
                     className="p-2 text-neutral hover:text-editicon active:scale-95 transition-all duration-200 rounded-md hover:bg-neutral/5"
                     title="Edit cinema"
                   >
@@ -220,7 +225,7 @@ const CinemaTable = ({
                     <div className="flex items-center justify-end space-x-2">
                       {canModify && (
                         <button
-                          onClick={() => onEdit(cinema)}
+                          onClick={() => handleEditClick(cinema)}
                           className="text-neutral hover:text-editicon transition-all duration-200 p-2 rounded-md cursor-pointer hover:bg-neutral/5 active:scale-95"
                           title="Edit cinema"
                         >

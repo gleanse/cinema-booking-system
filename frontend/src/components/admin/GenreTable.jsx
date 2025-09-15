@@ -10,6 +10,11 @@ const GenreTable = ({
 }) => {
   const canDelete = user?.is_superuser;
 
+  const handleEditClick = (genre) => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+    onEdit(genre);
+  };
+
   if (loading) {
     return (
       <div className="bg-background border border-inputbrdr rounded-lg shadow-form-s overflow-hidden">
@@ -140,7 +145,7 @@ const GenreTable = ({
                 <div className="flex items-center space-x-2 ml-2">
                   {onEdit && (
                     <button
-                      onClick={() => onEdit(genre)}
+                      onClick={() => handleEditClick(genre)}
                       className="p-1 text-neutral hover:text-editicon active:scale-95 transition-all duration-200 rounded-md hover:bg-neutral/5"
                       title="Edit genre"
                     >
@@ -217,7 +222,7 @@ const GenreTable = ({
                     <div className="flex items-center justify-end space-x-2">
                       {onEdit && (
                         <button
-                          onClick={() => onEdit(genre)}
+                          onClick={() => handleEditClick(genre)}
                           className="text-neutral hover:text-editicon transition-all duration-200 p-2 rounded-md cursor-pointer hover:bg-neutral/5 active:scale-95"
                           title="Edit genre"
                         >
