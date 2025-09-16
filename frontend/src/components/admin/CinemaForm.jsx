@@ -17,6 +17,7 @@ const CinemaForm = ({
   onCancel,
   loading = false,
   user = null,
+  existingCinemas = [],
 }) => {
   const [formData, setFormData] = useState({
     name: '',
@@ -25,12 +26,18 @@ const CinemaForm = ({
   });
   const [roomToRemove, setRoomToRemove] = useState(null);
   const [showRemoveConfirm, setShowRemoveConfirm] = useState(false);
-  const [newRoom, setNewRoom] = useState({ name: '', capacity: 50 });
+  const [newRoom, setNewRoom] = useState({
+    name: '',
+    capacity: 50,
+    seats_per_row: 10,
+  });
   const [errors, setErrors] = useState({});
+  const [roomErrors, setRoomErrors] = useState({});
   const [editingRoomIndex, setEditingRoomIndex] = useState(null);
   const [editingRoomData, setEditingRoomData] = useState({
     name: '',
     capacity: 0,
+    seats_per_row: 0,
   });
 
   useEffect(() => {
@@ -48,6 +55,7 @@ const CinemaForm = ({
       });
     }
     setErrors({});
+    setRoomErrors({});
   }, [cinema]);
 
   const handleChange = (e) => {
@@ -58,20 +66,60 @@ const CinemaForm = ({
 
   const handleRoomChange = (e) => {
     const { name, value } = e.target;
+
+    let processedValue = value;
+    if (name === 'capacity' || name === 'seats_per_row') {
+      processedValue = value === '' ? '' : parseInt(value) || 0;
+    }
+
     setNewRoom((prev) => ({
       ...prev,
-      [name]: name === 'capacity' ? parseInt(value) : value,
+      [name]:
+        name === 'capacity' || name === 'seats_per_row'
+          ? parseInt(value)
+          : value,
     }));
+    if (roomErrors[name]) setRoomErrors((prev) => ({ ...prev, [name]: '' }));
   };
 
   const addScreeningRoom = () => {
-    if (newRoom.name.trim() && newRoom.capacity > 0) {
-      setFormData((prev) => ({
-        ...prev,
-        screening_rooms: [...prev.screening_rooms, { ...newRoom }],
-      }));
-      setNewRoom({ name: '', capacity: 50 });
+    const newRoomErrors = {};
+    if (!newRoom.name.trim()) newRoomErrors.name = 'Room name is required';
+    if (
+      isNaN(newRoom.capacity) ||
+      newRoom.capacity < 10 ||
+      newRoom.capacity > 200
+    )
+      newRoomErrors.capacity = 'Capacity must be a number between 10 and 200';
+    if (isNaN(newRoom.seats_per_row) || newRoom.seats_per_row <= 0)
+      newRoomErrors.seats_per_row =
+        'Seats per row must be a number greater than 0';
+    if (newRoom.seats_per_row > newRoom.capacity)
+      newRoomErrors.seats_per_row = 'Seats per row cannot exceed capacity';
+    if (newRoom.seats_per_row < 3)
+      newRoomErrors.seats_per_row = 'Minimum 3 seats per row required';
+
+    if (newRoom.name.trim()) {
+      const isDuplicate = formData.screening_rooms.some(
+        (room) => room.name.toLowerCase() === newRoom.name.toLowerCase().trim()
+      );
+      if (isDuplicate) {
+        newRoomErrors.name =
+          'A room with this name already exists in this cinema';
+      }
     }
+
+    if (Object.keys(newRoomErrors).length > 0) {
+      setRoomErrors(newRoomErrors);
+      return;
+    }
+
+    setFormData((prev) => ({
+      ...prev,
+      screening_rooms: [...prev.screening_rooms, { ...newRoom }],
+    }));
+    setNewRoom({ name: '', capacity: 50, seats_per_row: 10 });
+    setRoomErrors({});
   };
 
   const confirmRemoveRoom = (index) => {
@@ -98,16 +146,56 @@ const CinemaForm = ({
     setEditingRoomData({
       name: room.name,
       capacity: room.capacity,
+      seats_per_row: room.seats_per_row,
       id: room.id,
     });
+    setRoomErrors({});
   };
 
   const cancelEditingRoom = () => {
     setEditingRoomIndex(null);
-    setEditingRoomData({ name: '', capacity: 0 });
+    setEditingRoomData({ name: '', capacity: 0, seats_per_row: 0 });
+    setRoomErrors({});
   };
 
   const saveEditedRoom = () => {
+    const newRoomErrors = {};
+    if (!editingRoomData.name.trim())
+      newRoomErrors.name = 'Room name is required';
+    if (
+      isNaN(editingRoomData.capacity) ||
+      editingRoomData.capacity < 10 ||
+      editingRoomData.capacity > 200
+    )
+      newRoomErrors.capacity = 'Capacity must be a number between 10 and 200';
+    if (
+      isNaN(editingRoomData.seats_per_row) ||
+      editingRoomData.seats_per_row <= 0
+    )
+      newRoomErrors.seats_per_row =
+        'Seats per row must be a number greater than 0';
+    if (editingRoomData.seats_per_row > editingRoomData.capacity)
+      newRoomErrors.seats_per_row = 'Seats per row cannot exceed capacity';
+    if (editingRoomData.seats_per_row < 3)
+      newRoomErrors.seats_per_row = 'Minimum 3 seats per row required';
+
+    if (editingRoomData.name.trim()) {
+      const isDuplicate = formData.screening_rooms.some(
+        (room, index) =>
+          index !== editingRoomIndex &&
+          room.name.toLowerCase() === editingRoomData.name.toLowerCase().trim()
+      );
+      if (isDuplicate) {
+        newRoomErrors.name =
+          'A room with this name already exists in this cinema';
+      }
+    }
+
+    if (Object.keys(newRoomErrors).length > 0) {
+      setRoomErrors(newRoomErrors);
+      return;
+    }
+
     if (editingRoomIndex !== null) {
       setFormData((prev) => ({
         ...prev,
@@ -118,16 +206,27 @@ const CinemaForm = ({
         ),
       }));
       setEditingRoomIndex(null);
-      setEditingRoomData({ name: '', capacity: 0 });
+      setEditingRoomData({ name: '', capacity: 0, seats_per_row: 0 });
+      setRoomErrors({});
     }
   };
 
   const handleEditRoomChange = (e) => {
     const { name, value } = e.target;
+
+    let processedValue = value;
+    if (name === 'capacity' || name === 'seats_per_row') {
+      processedValue = value === '' ? '' : parseInt(value) || 0;
+    }
+
     setEditingRoomData((prev) => ({
       ...prev,
-      [name]: name === 'capacity' ? parseInt(value) : value,
+      [name]:
+        name === 'capacity' || name === 'seats_per_row'
+          ? parseInt(value)
+          : value,
     }));
+    if (roomErrors[name]) setRoomErrors((prev) => ({ ...prev, [name]: '' }));
   };
 
   const removeScreeningRoom = (index) => {
@@ -142,16 +241,44 @@ const CinemaForm = ({
     if (!formData.name.trim()) newErrors.name = 'Cinema name is required';
     if (formData.name.length > 100)
       newErrors.name = 'Name must be 100 characters or less';
-    if (formData.location && formData.location.length > 255)
+    if (!formData.location.trim()) newErrors.location = 'Location is required';
+    if (formData.location.length > 255)
       newErrors.location = 'Location must be 255 characters or less';
+    if (formData.name.trim() && formData.location.trim() && !cinema) {
+      const isDuplicate = existingCinemas.some(
+        (existing) =>
+          existing.name.toLowerCase() === formData.name.toLowerCase().trim() &&
+          existing.location?.toLowerCase() ===
+            formData.location.toLowerCase().trim()
+      );
+      if (isDuplicate) {
+        newErrors.name = 'A cinema with this name and location already exists';
+        newErrors.location =
+          'A cinema with this name and location already exists';
+      }
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (validateForm()) {
-      onSubmit(formData);
+    setErrors({});
+
+    if (!validateForm()) {
+      return;
+    }
+
+    try {
+      await onSubmit(formData);
+    } catch (error) {
+      if (error.response?.data) {
+        setErrors(error.response.data);
+      } else {
+        console.error('Submission error:', error);
+        setErrors({ general: 'An error occurred. Please try again.' });
+      }
     }
   };
 
@@ -171,7 +298,6 @@ const CinemaForm = ({
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Cinema Basic Info */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
           <div>
             <label
@@ -207,7 +333,7 @@ const CinemaForm = ({
               htmlFor="location"
               className="block text-sm font-medium text-foreground mb-2"
             >
-              Location
+              Location *
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -244,34 +370,74 @@ const CinemaForm = ({
             </span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4">
             <div>
+              <label className="block text-xs text-foreground mb-1">
+                Room Name *
+              </label>
               <input
                 type="text"
-                placeholder="Room name"
                 name="name"
                 value={newRoom.name}
                 onChange={handleRoomChange}
-                className="w-full px-3 py-2 bg-inputbg border border-inputbrdr rounded-md text-foreground placeholder-neutral focus:outline-none focus:ring-2 focus:ring-secondary"
+                className={`w-full px-3 py-2 bg-inputbg border rounded-md text-foreground placeholder-neutral focus:outline-none focus:ring-2 focus:ring-secondary ${
+                  roomErrors.name ? 'border-accent' : 'border-inputbrdr'
+                }`}
+                placeholder="e.g., Cinema 1"
               />
+              {roomErrors.name && (
+                <p className="text-accent text-xs mt-1">{roomErrors.name}</p>
+              )}
             </div>
             <div>
+              <label className="block text-xs text-foreground mb-1">
+                Capacity *
+              </label>
               <input
                 type="number"
-                placeholder="Capacity"
                 name="capacity"
                 value={newRoom.capacity}
                 onChange={handleRoomChange}
-                min="1"
-                max="1000"
-                className="w-full px-3 py-2 bg-inputbg border border-inputbrdr rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-secondary"
+                min="10"
+                max="200"
+                className={`w-full px-3 py-2 bg-inputbg border rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-secondary ${
+                  roomErrors.capacity ? 'border-accent' : 'border-inputbrdr'
+                }`}
               />
+              {roomErrors.capacity && (
+                <p className="text-accent text-xs mt-1">
+                  {roomErrors.capacity}
+                </p>
+              )}
             </div>
             <div>
+              <label className="block text-xs text-foreground mb-1">
+                Seats per Row *
+              </label>
+              <input
+                type="number"
+                name="seats_per_row"
+                value={newRoom.seats_per_row}
+                onChange={handleRoomChange}
+                min="3"
+                max="200"
+                className={`w-full px-3 py-2 bg-inputbg border rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-secondary ${
+                  roomErrors.seats_per_row
+                    ? 'border-accent'
+                    : 'border-inputbrdr'
+                }`}
+              />
+              {roomErrors.seats_per_row && (
+                <p className="text-accent text-xs mt-1">
+                  {roomErrors.seats_per_row}
+                </p>
+              )}
+            </div>
+            <div className="flex items-start">
               <button
                 type="button"
                 onClick={addScreeningRoom}
-                className="w-full bg-primary text-white py-2 px-4 rounded-md hover:bg-primary/90 transition-colors flex items-center justify-center"
+                className="w-full bg-primary text-white py-2 px-4 rounded-md hover:bg-primary/90 transition-colors flex items-center justify-center mt-6"
               >
                 <FaPlus className="h-3 w-3 mr-1" />
                 Add Room
@@ -287,54 +453,95 @@ const CinemaForm = ({
                   className="flex items-center justify-between bg-neutral/5 p-2 rounded"
                 >
                   {editingRoomIndex === index ? (
-                    // EDIT MODE
-                    <div className="flex-1 flex gap-2 items-center">
-                      <input
-                        type="text"
-                        name="name"
-                        value={editingRoomData.name}
-                        onChange={handleEditRoomChange}
-                        className="flex-1 px-2 py-1 bg-inputbg text-foreground border border-inputbrdr rounded text-sm"
-                        placeholder="Room name"
-                      />
-                      <input
-                        type="number"
-                        name="capacity"
-                        value={editingRoomData.capacity}
-                        onChange={handleEditRoomChange}
-                        min="1"
-                        max="1000"
-                        className="w-20 px-2 py-1 bg-inputbg border border-inputbrdr rounded text-sm text-foreground"
-                        placeholder="Capacity"
-                      />
-                      <div className="flex gap-1">
-                        <button
-                          type="button"
-                          onClick={saveEditedRoom}
-                          className="text-green-600 hover:text-green-800 transition-colors"
-                          title="Save changes"
-                        >
-                          <FaCheck className="h-4 w-4" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={cancelEditingRoom}
-                          className="text-neutral hover:text-foreground transition-colors"
-                          title="Cancel edit"
-                        >
-                          <FaTimes className="h-4 w-4" />
-                        </button>
+                    <div className="flex-1">
+                      <div className="flex gap-2 items-center mb-2">
+                        <div className="flex-1">
+                          <input
+                            type="text"
+                            name="name"
+                            value={editingRoomData.name}
+                            onChange={handleEditRoomChange}
+                            className={`w-full px-2 py-1 bg-inputbg text-foreground border rounded text-sm ${
+                              roomErrors.name
+                                ? 'border-accent'
+                                : 'border-inputbrdr'
+                            }`}
+                            placeholder="Room name"
+                          />
+                          {roomErrors.name && (
+                            <p className="text-accent text-xs mt-1">
+                              {roomErrors.name}
+                            </p>
+                          )}
+                        </div>
+                        <div>
+                          <input
+                            type="number"
+                            name="capacity"
+                            value={editingRoomData.capacity}
+                            onChange={handleEditRoomChange}
+                            min="10"
+                            max="200"
+                            className={`w-20 px-2 py-1 bg-inputbg border rounded text-sm text-foreground ${
+                              roomErrors.capacity
+                                ? 'border-accent'
+                                : 'border-inputbrdr'
+                            }`}
+                          />
+                          {roomErrors.capacity && (
+                            <p className="text-accent text-xs mt-1">
+                              {roomErrors.capacity}
+                            </p>
+                          )}
+                        </div>
+                        <div>
+                          <input
+                            type="number"
+                            name="seats_per_row"
+                            value={editingRoomData.seats_per_row}
+                            onChange={handleEditRoomChange}
+                            min="3"
+                            max="200"
+                            className={`w-24 px-2 py-1 bg-inputbg border rounded text-sm text-foreground ${
+                              roomErrors.seats_per_row
+                                ? 'border-accent'
+                                : 'border-inputbrdr'
+                            }`}
+                          />
+                          {roomErrors.seats_per_row && (
+                            <p className="text-accent text-xs mt-1">
+                              {roomErrors.seats_per_row}
+                            </p>
+                          )}
+                        </div>
+                        <div className="flex gap-1">
+                          <button
+                            type="button"
+                            onClick={saveEditedRoom}
+                            className="text-green-600 hover:text-green-800 transition-colors"
+                            title="Save changes"
+                          >
+                            <FaCheck className="h-4 w-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={cancelEditingRoom}
+                            className="text-neutral hover:text-foreground transition-colors"
+                            title="Cancel edit"
+                          >
+                            <FaTimes className="h-4 w-4" />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ) : (
-                    // VIEW MODE
                     <>
                       <div>
                         <span className="text-sm font-medium text-foreground">
                           {room.name}
                         </span>
                         <span className="text-xs text-neutral ml-2">
-                          ({room.capacity} seats)
+                          ({room.capacity} seats, {room.seats_per_row} per row)
                         </span>
                       </div>
                       <div className="flex gap-2">

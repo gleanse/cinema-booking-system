@@ -89,6 +89,7 @@ const AdminCinemasPage = () => {
       fetchScreeningRooms();
     } catch (err) {
       console.error('Form submission error:', err);
+      throw err;
     } finally {
       setFormLoading(false);
     }
@@ -111,7 +112,8 @@ const AdminCinemasPage = () => {
           if (
             existingRoom &&
             (existingRoom.name !== room.name ||
-              existingRoom.capacity !== room.capacity)
+              existingRoom.capacity !== room.capacity ||
+              existingRoom.seats_per_row !== room.seats_per_row)
           ) {
             roomsToUpdate.push(room);
           }
@@ -127,6 +129,7 @@ const AdminCinemasPage = () => {
         await createScreeningRoom({
           name: room.name,
           capacity: room.capacity,
+          seats_per_row: room.seats_per_row,
           cinema: cinemaId,
         });
       }
@@ -135,6 +138,7 @@ const AdminCinemasPage = () => {
         await updateScreeningRoom(room.id, {
           name: room.name,
           capacity: room.capacity,
+          seats_per_row: room.seats_per_row,
           cinema: cinemaId,
         });
       }
@@ -300,6 +304,7 @@ const AdminCinemasPage = () => {
                 onCancel={handleCancel}
                 loading={formLoading || roomsLoading}
                 user={user}
+                existingCinemas={cinemas}
               />
             </div>
           )}
