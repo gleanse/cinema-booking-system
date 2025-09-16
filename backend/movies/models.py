@@ -9,7 +9,7 @@ class Genre(models.Model):
 
 
 class Movie(models.Model):
-    title = models.CharField(max_length=150)
+    title = models.CharField(max_length=150, unique=True)
     description = models.TextField(max_length=2000)
     genre = models.ForeignKey(
         Genre,

@@ -25,7 +25,19 @@ class ShowtimeSerializer(serializers.ModelSerializer):
 class GenreSerializer(serializers.ModelSerializer):
     class Meta:
         model = Genre
-        fields = ['id','name','description']   
+        fields = ['id','name','description']
+        
+    def validate_name(self, value):
+        value = value.strip()
+
+        if self.instance is None:
+            if Genre.objects.filter(name__iexact=value).exists():
+                raise serializers.ValidationError("A genre with this name already exists.")
+        else:
+            if Genre.objects.filter(name__iexact=value).exclude(id=self.instance.id).exists():
+                raise serializers.ValidationError("A genre with this name already exists.")
+        
+        return value
 
 # minimal MOVIE fields
 class MovieListSerializer(serializers.ModelSerializer):
@@ -92,6 +104,18 @@ class MovieSerializer(serializers.ModelSerializer):
             'showtimes', 
         ]
         read_only_fields = ['created_at','updated_at']
+
+    def validate_title(self, value):
+        value = value.strip()
+
+        if self.instance is None:
+            if Movie.objects.filter(title__iexact=value).exists():
+                raise serializers.ValidationError("A movie with this title already exists.")
+        else:
+            if Movie.objects.filter(title__iexact=value).exclude(id=self.instance.id).exists():
+                raise serializers.ValidationError("A movie with this title already exists.")
+
+        return value
 
 # minimal fields of GENRE including the count of related movies
 class GenreMovieCountSerializer(serializers.ModelSerializer):
