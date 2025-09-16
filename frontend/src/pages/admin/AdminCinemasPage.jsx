@@ -13,14 +13,14 @@ const AdminCinemasPage = () => {
   // for CINEMA
   const {
     cinemas,
-    loading,
-    error,
+    loading: cinemaLoading,
+    error: cinemaError,
     fetchCinemas,
     createCinema,
     updateCinema,
     updateCinemaPartial,
     deleteCinema,
-    clearError,
+    clearError: clearCinemaError,
     canModify,
     canDelete,
   } = useCinemasCRUD(user);
@@ -28,10 +28,13 @@ const AdminCinemasPage = () => {
   // for SCREENING ROOMS
   const {
     screeningRooms,
+    loading: roomsHookLoading,
+    error: roomsError,
     fetchScreeningRooms,
     createScreeningRoom,
     updateScreeningRoom,
     deleteScreeningRoom,
+    clearError: clearRoomsError,
   } = useScreeningRoomsCRUD(user);
 
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -40,6 +43,16 @@ const AdminCinemasPage = () => {
   const [deletingCinema, setDeletingCinema] = useState(null);
   const [formLoading, setFormLoading] = useState(false);
   const [roomsLoading, setRoomsLoading] = useState(false);
+  const [pageError, setPageError] = useState(null);
+
+  const loading = cinemaLoading || roomsHookLoading;
+  const error = cinemaError || roomsError || pageError;
+
+  const clearError = () => {
+    clearCinemaError();
+    clearRoomsError();
+    setPageError(null);
+  };
 
   useEffect(() => {
     const loadUser = async () => {
@@ -60,6 +73,8 @@ const AdminCinemasPage = () => {
 
   const handleSubmit = async (formData) => {
     setFormLoading(true);
+    setPageError(null);
+
     try {
       if (editingCinema) {
         await updateCinema(editingCinema.id, {
@@ -156,7 +171,7 @@ const AdminCinemasPage = () => {
 
   const handleEdit = (cinema) => {
     if (!canModify) {
-      alert('You need staff permissions to edit cinemas');
+      setPageError('You need staff permissions to edit cinemas');
       return;
     }
 
@@ -167,51 +182,60 @@ const AdminCinemasPage = () => {
 
     setEditingCinema(cinemaWithRooms);
     setIsFormOpen(true);
+    clearError();
   };
 
   const handleDelete = (cinema) => {
     if (!canDelete) {
-      alert('You need superuser permissions to delete cinemas');
+      setPageError('You need superuser permissions to delete cinemas');
       return;
     }
     setDeletingCinema(cinema);
     setIsDeleteModalOpen(true);
+    clearError();
   };
 
   const handleConfirmDelete = async () => {
     if (!deletingCinema) return;
 
+    setPageError(null);
+
     try {
       const cinemaRooms = getCinemaRooms(deletingCinema.id);
+
       for (const room of cinemaRooms) {
         await deleteScreeningRoom(room.id);
       }
-
       await deleteCinema(deletingCinema.id);
       setIsDeleteModalOpen(false);
       setDeletingCinema(null);
       fetchScreeningRooms();
     } catch (err) {
       console.error('Delete error:', err);
+      setPageError('Failed to delete cinema. Please try again.');
     }
   };
 
   const handleToggleStatus = async (cinema) => {
     if (!canModify) {
-      alert('You need staff permissions to toggle cinema status');
+      setPageError('You need staff permissions to toggle cinema status');
       return;
     }
+
+    setPageError(null);
 
     try {
       await updateCinemaPartial(cinema.id, { is_active: !cinema.is_active });
     } catch (err) {
       console.error('Status toggle error:', err);
+      setPageError('Failed to update cinema status. Please try again.');
     }
   };
 
   const handleCancel = () => {
     setIsFormOpen(false);
     setEditingCinema(null);
+    clearError();
   };
 
   const handleCloseDeleteModal = () => {
@@ -286,7 +310,10 @@ const AdminCinemasPage = () => {
           </div>
           {!isFormOpen && !loading && canModify && cinemas.length > 0 && (
             <button
-              onClick={() => setIsFormOpen(true)}
+              onClick={() => {
+                setIsFormOpen(true);
+                clearError(); // Clear errors when opening form
+              }}
               className="cursor-pointer inline-flex items-center px-4 py-2 bg-primary text-white font-medium rounded-md hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2 transition-all"
             >
               <FaPlus className="h-5 w-5 mr-2" />
@@ -333,7 +360,10 @@ const AdminCinemasPage = () => {
                 </p>
                 {canModify && (
                   <button
-                    onClick={() => setIsFormOpen(true)}
+                    onClick={() => {
+                      setIsFormOpen(true);
+                      clearError(); // Clear errors when opening form
+                    }}
                     className="inline-flex items-center px-4 py-2 bg-primary text-white font-medium rounded-md hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2 transition-all"
                   >
                     <FaPlus className="h-4 w-4 mr-2" />

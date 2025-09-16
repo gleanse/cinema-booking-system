@@ -67,6 +67,34 @@ const useCinemasCRUD = (user = null) => {
     }
   }, []);
 
+  const extractErrorMessage = useCallback((err) => {
+    if (err.response?.data) {
+      const errorData = err.response.data;
+
+      if (typeof errorData === 'object' && !Array.isArray(errorData)) {
+        const firstErrorKey = Object.keys(errorData)[0];
+        if (firstErrorKey) {
+          const firstError = errorData[firstErrorKey];
+          return Array.isArray(firstError) ? firstError[0] : firstError;
+        }
+      }
+
+      if (typeof errorData === 'string') {
+        return errorData;
+      }
+
+      if (errorData.message) {
+        return errorData.message;
+      }
+
+      if (errorData.detail) {
+        return errorData.detail;
+      }
+    }
+
+    return 'An unexpected error occurred';
+  }, []);
+
   // create new cinema (requires staff permission)
   const createCinema = useCallback(
     async (cinemaData) => {
@@ -89,19 +117,21 @@ const useCinemasCRUD = (user = null) => {
           data: err.response?.data,
         });
 
-        const errorMessage =
-          err.message === 'staff or superuser permission required'
-            ? err.message
-            : err.response?.data?.message ||
-              err.response?.data ||
-              'failed to create cinema';
+        let errorMessage;
+
+        if (err.message === 'staff or superuser permission required') {
+          errorMessage = err.message;
+        } else {
+          errorMessage = extractErrorMessage(err) || 'failed to create cinema';
+        }
+
         setError(errorMessage);
         throw err;
       } finally {
         setLoading(false);
       }
     },
-    [checkPermission]
+    [checkPermission, extractErrorMessage]
   );
 
   // update cinema (requires staff permission)
@@ -118,17 +148,21 @@ const useCinemasCRUD = (user = null) => {
         );
         return response.data;
       } catch (err) {
-        const errorMessage =
-          err.message === 'staff or superuser permission required'
-            ? err.message
-            : err.response?.data?.message || 'failed to update cinema';
+        let errorMessage;
+
+        if (err.message === 'staff or superuser permission required') {
+          errorMessage = err.message;
+        } else {
+          errorMessage = extractErrorMessage(err) || 'failed to update cinema';
+        }
+
         setError(errorMessage);
         throw err;
       } finally {
         setLoading(false);
       }
     },
-    [checkPermission]
+    [checkPermission, extractErrorMessage]
   );
 
   // partial update cinema (requires staff permission)
@@ -145,17 +179,21 @@ const useCinemasCRUD = (user = null) => {
         );
         return response.data;
       } catch (err) {
-        const errorMessage =
-          err.message === 'staff or superuser permission required'
-            ? err.message
-            : err.response?.data?.message || 'failed to update cinema';
+        let errorMessage;
+
+        if (err.message === 'staff or superuser permission required') {
+          errorMessage = err.message;
+        } else {
+          errorMessage = extractErrorMessage(err) || 'failed to update cinema';
+        }
+
         setError(errorMessage);
         throw err;
       } finally {
         setLoading(false);
       }
     },
-    [checkPermission]
+    [checkPermission, extractErrorMessage]
   );
 
   // delete cinema (requires superuser permission)
@@ -170,17 +208,21 @@ const useCinemasCRUD = (user = null) => {
         setCinemas((prev) => prev.filter((cinema) => cinema.id !== id));
         return true;
       } catch (err) {
-        const errorMessage =
-          err.message === 'only superusers can delete cinemas'
-            ? err.message
-            : err.response?.data?.message || 'failed to delete cinema';
+        let errorMessage;
+
+        if (err.message === 'only superusers can delete cinemas') {
+          errorMessage = err.message;
+        } else {
+          errorMessage = extractErrorMessage(err) || 'failed to delete cinema';
+        }
+
         setError(errorMessage);
         throw err;
       } finally {
         setLoading(false);
       }
     },
-    [checkPermission]
+    [checkPermission, extractErrorMessage]
   );
 
   return {

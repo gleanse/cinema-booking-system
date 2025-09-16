@@ -236,6 +236,23 @@ const CinemaForm = ({
     }));
   };
 
+  const extractServerErrors = (errorResponse) => {
+    const serverErrors = {};
+
+    if (errorResponse && typeof errorResponse === 'object') {
+      Object.keys(errorResponse).forEach((field) => {
+        const errorValue = errorResponse[field];
+        if (Array.isArray(errorValue)) {
+          serverErrors[field] = errorValue[0];
+        } else if (typeof errorValue === 'string') {
+          serverErrors[field] = errorValue;
+        }
+      });
+    }
+
+    return serverErrors;
+  };
+
   const validateForm = () => {
     const newErrors = {};
     if (!formData.name.trim()) newErrors.name = 'Cinema name is required';
@@ -244,14 +261,38 @@ const CinemaForm = ({
     if (!formData.location.trim()) newErrors.location = 'Location is required';
     if (formData.location.length > 255)
       newErrors.location = 'Location must be 255 characters or less';
-    if (formData.name.trim() && formData.location.trim() && !cinema) {
-      const isDuplicate = existingCinemas.some(
-        (existing) =>
+
+    if (formData.name.trim()) {
+      if (!cinema) {
+        const isDuplicateName = existingCinemas.some(
+          (existing) =>
+            existing.name.toLowerCase() === formData.name.toLowerCase().trim()
+        );
+        if (isDuplicateName) {
+          newErrors.name = 'A cinema with this name already exists';
+        }
+      } else {
+        const isDuplicateName = existingCinemas.some(
+          (existing) =>
+            existing.id !== cinema.id &&
+            existing.name.toLowerCase() === formData.name.toLowerCase().trim()
+        );
+        if (isDuplicateName) {
+          newErrors.name = 'A cinema with this name already exists';
+        }
+      }
+    }
+
+    if (formData.name.trim() && formData.location.trim() && !newErrors.name) {
+      const isDuplicateCombo = existingCinemas.some((existing) => {
+        if (cinema && existing.id === cinema.id) return false;
+        return (
           existing.name.toLowerCase() === formData.name.toLowerCase().trim() &&
           existing.location?.toLowerCase() ===
             formData.location.toLowerCase().trim()
-      );
-      if (isDuplicate) {
+        );
+      });
+      if (isDuplicateCombo) {
         newErrors.name = 'A cinema with this name and location already exists';
         newErrors.location =
           'A cinema with this name and location already exists';
@@ -273,11 +314,21 @@ const CinemaForm = ({
     try {
       await onSubmit(formData);
     } catch (error) {
+      console.error('Form submission error:', error);
+
       if (error.response?.data) {
-        setErrors(error.response.data);
+        const serverErrors = extractServerErrors(error.response.data);
+        if (Object.keys(serverErrors).length > 0) {
+          setErrors(serverErrors);
+        } else {
+          setErrors({
+            general: error.message || 'An error occurred. Please try again.',
+          });
+        }
       } else {
-        console.error('Submission error:', error);
-        setErrors({ general: 'An error occurred. Please try again.' });
+        setErrors({
+          general: error.message || 'An error occurred. Please try again.',
+        });
       }
     }
   };
@@ -296,6 +347,13 @@ const CinemaForm = ({
             : 'Add a new cinema with screening rooms'}
         </p>
       </div>
+
+      {/* GENERAL ERROR*/}
+      {errors.general && (
+        <div className="mb-6 bg-accent/10 border border-accent rounded-md p-4">
+          <p className="text-sm text-accent">{errors.general}</p>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">

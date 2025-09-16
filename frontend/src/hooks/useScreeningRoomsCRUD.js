@@ -35,6 +35,34 @@ const useScreeningRoomsCRUD = (user = null) => {
 
   const clearError = useCallback(() => setError(null), []);
 
+  const extractErrorMessage = useCallback((err) => {
+    if (err.response?.data) {
+      const errorData = err.response.data;
+
+      if (typeof errorData === 'object' && !Array.isArray(errorData)) {
+        const firstErrorKey = Object.keys(errorData)[0];
+        if (firstErrorKey) {
+          const firstError = errorData[firstErrorKey];
+          return Array.isArray(firstError) ? firstError[0] : firstError;
+        }
+      }
+
+      if (typeof errorData === 'string') {
+        return errorData;
+      }
+
+      if (errorData.message) {
+        return errorData.message;
+      }
+
+      if (errorData.detail) {
+        return errorData.detail;
+      }
+    }
+
+    return 'An unexpected error occurred';
+  }, []);
+
   const fetchScreeningRooms = useCallback(async () => {
     try {
       setLoading(true);
@@ -45,31 +73,34 @@ const useScreeningRoomsCRUD = (user = null) => {
       setScreeningRooms(roomData);
       return roomData;
     } catch (err) {
-      setError(
-        err.response?.data?.message || 'failed to fetch screening rooms'
-      );
+      const errorMessage =
+        extractErrorMessage(err) || 'failed to fetch screening rooms';
+      setError(errorMessage);
       throw err;
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [extractErrorMessage]);
 
-  const getScreeningRoomDetails = useCallback(async (id) => {
-    try {
-      setLoading(true);
-      setError(null);
+  const getScreeningRoomDetails = useCallback(
+    async (id) => {
+      try {
+        setLoading(true);
+        setError(null);
 
-      const response = await screeningRoomAPI.getScreeningRoomDetails(id);
-      return response.data;
-    } catch (err) {
-      setError(
-        err.response?.data?.message || 'failed to fetch screening room details'
-      );
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+        const response = await screeningRoomAPI.getScreeningRoomDetails(id);
+        return response.data;
+      } catch (err) {
+        const errorMessage =
+          extractErrorMessage(err) || 'failed to fetch screening room details';
+        setError(errorMessage);
+        throw err;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [extractErrorMessage]
+  );
 
   const createScreeningRoom = useCallback(
     async (roomData) => {
@@ -92,19 +123,22 @@ const useScreeningRoomsCRUD = (user = null) => {
           data: err.response?.data,
         });
 
-        const errorMessage =
-          err.message === 'staff or superuser permission required'
-            ? err.message
-            : err.response?.data?.message ||
-              err.response?.data ||
-              'failed to create screening room';
+        let errorMessage;
+
+        if (err.message === 'staff or superuser permission required') {
+          errorMessage = err.message;
+        } else {
+          errorMessage =
+            extractErrorMessage(err) || 'failed to create screening room';
+        }
+
         setError(errorMessage);
         throw err;
       } finally {
         setLoading(false);
       }
     },
-    [checkPermission]
+    [checkPermission, extractErrorMessage]
   );
 
   const updateScreeningRoom = useCallback(
@@ -123,17 +157,22 @@ const useScreeningRoomsCRUD = (user = null) => {
         );
         return response.data;
       } catch (err) {
-        const errorMessage =
-          err.message === 'staff or superuser permission required'
-            ? err.message
-            : err.response?.data?.message || 'failed to update screening room';
+        let errorMessage;
+
+        if (err.message === 'staff or superuser permission required') {
+          errorMessage = err.message;
+        } else {
+          errorMessage =
+            extractErrorMessage(err) || 'failed to update screening room';
+        }
+
         setError(errorMessage);
         throw err;
       } finally {
         setLoading(false);
       }
     },
-    [checkPermission]
+    [checkPermission, extractErrorMessage]
   );
 
   const updateScreeningRoomPartial = useCallback(
@@ -152,17 +191,22 @@ const useScreeningRoomsCRUD = (user = null) => {
         );
         return response.data;
       } catch (err) {
-        const errorMessage =
-          err.message === 'staff or superuser permission required'
-            ? err.message
-            : err.response?.data?.message || 'failed to update screening room';
+        let errorMessage;
+
+        if (err.message === 'staff or superuser permission required') {
+          errorMessage = err.message;
+        } else {
+          errorMessage =
+            extractErrorMessage(err) || 'failed to update screening room';
+        }
+
         setError(errorMessage);
         throw err;
       } finally {
         setLoading(false);
       }
     },
-    [checkPermission]
+    [checkPermission, extractErrorMessage]
   );
 
   const deleteScreeningRoom = useCallback(
@@ -176,17 +220,22 @@ const useScreeningRoomsCRUD = (user = null) => {
         setScreeningRooms((prev) => prev.filter((room) => room.id !== id));
         return true;
       } catch (err) {
-        const errorMessage =
-          err.message === 'only superusers can delete screening rooms'
-            ? err.message
-            : err.response?.data?.message || 'failed to delete screening room';
+        let errorMessage;
+
+        if (err.message === 'only superusers can delete screening rooms') {
+          errorMessage = err.message;
+        } else {
+          errorMessage =
+            extractErrorMessage(err) || 'failed to delete screening room';
+        }
+
         setError(errorMessage);
         throw err;
       } finally {
         setLoading(false);
       }
     },
-    [checkPermission]
+    [checkPermission, extractErrorMessage]
   );
 
   return {
