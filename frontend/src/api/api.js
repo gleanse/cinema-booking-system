@@ -142,7 +142,7 @@ export const genreAPI = {
   deleteGenre: (id) => api.delete(`genres/${id}/`),
 };
 
-// SHOWTIME api functions
+// SHOWTIME api functions - UPDATED
 export const showtimeAPI = {
   // GET all showtimes
   getShowtimes: (detail = 'summary') => api.get(`showtimes/?detail=${detail}`),
@@ -153,6 +153,18 @@ export const showtimeAPI = {
 
   // GET showtimes for a specific movie
   getMovieShowtimes: (movieId) => api.get(`showtimes/?movie=${movieId}`),
+
+  getCinemaShowtimes: (cinemaId, filters = {}) => {
+    const params = new URLSearchParams();
+
+    if (filters.date) params.append('date', filters.date);
+    if (filters.movie) params.append('movie', filters.movie);
+
+    const queryString = params.toString();
+    return api.get(
+      `cinemas/${cinemaId}/showtimes/${queryString ? `?${queryString}` : ''}`
+    );
+  },
 
   // CREATE new showtime
   createShowtime: (showtimeData) => api.post('showtimes/', showtimeData),
@@ -177,6 +189,18 @@ export const cinemaAPI = {
   // GET cinema by ID with detail mode support
   getCinemaDetails: (id, detail = 'summary') =>
     api.get(`cinemas/${id}/?detail=${detail}`),
+
+  getCinemaShowtimes: (cinemaId, filters = {}) => {
+    const params = new URLSearchParams();
+
+    if (filters.date) params.append('date', filters.date);
+    if (filters.movie) params.append('movie', filters.movie);
+
+    const queryString = params.toString();
+    return api.get(
+      `cinemas/${cinemaId}/showtimes/${queryString ? `?${queryString}` : ''}`
+    );
+  },
 
   // CREATE new cinema
   createCinema: (cinemaData) => api.post('cinemas/', cinemaData),

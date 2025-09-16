@@ -1,12 +1,14 @@
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { useState, useRef } from 'react';
-import { useScrollToTop } from "./hooks/utils/useScrollToTop";
+import { useScrollToTop } from './hooks/utils/useScrollToTop';
 import LoginPage from './pages/LoginPage';
 import HomePage from './pages/HomePage';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import MovieDetailsPage from './pages/MovieDetailPage';
 import MoviesPage from './pages/MoviesPage';
+import CinemaListPage from './pages/CinemaListPage';
+import CinemaShowtimesPage from './pages/CinemaShowtimesPage';
 import ProtectedRoute from './components/admin/ProtectedRoute';
 // ADMIN PAGES
 import Sidebar from './components/admin/Sidebar';
@@ -23,7 +25,7 @@ function App() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   useScrollToTop(scrollRef);
-  
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {!isAdminPage && <Navbar />}
@@ -52,6 +54,11 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/movies/:id" element={<MovieDetailsPage />} />
             <Route path="/movies" element={<MoviesPage />} />
+            <Route path="/cinemas" element={<CinemaListPage />} />
+            <Route
+              path="/cinemas/:cinemaId/showtimes"
+              element={<CinemaShowtimesPage />}
+            />
             <Route path="/login" element={<LoginPage />} />
 
             {/* ADMIN ONLY PAGES */}
