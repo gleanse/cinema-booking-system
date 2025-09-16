@@ -2,6 +2,7 @@ from rest_framework import serializers
 from showtimes.models import Showtime, ScreeningRoom, Cinema
 from movies.models import Movie
 from movies.api.v1.serializers import GenreSerializer
+from django.core.exceptions import ValidationError
 
 
 class ScreeningRoomSerializer(serializers.ModelSerializer):
@@ -13,9 +14,24 @@ class ScreeningRoomSerializer(serializers.ModelSerializer):
             "id", 
             "name", 
             "capacity", 
+            "seats_per_row",
             "cinema",
             "cinema_name",
         ]
+    
+    def validate(self, data):
+        seats_per_row = data.get("seats_per_row", getattr(self.instance, "seats_per_row", None))
+        capacity = data.get("capacity", getattr(self.instance, "capacity", None))
+
+        if seats_per_row is None or capacity is None:
+            return data
+
+        if seats_per_row <= 0:
+            raise serializers.ValidationError({"seats_per_row": "Seats per row must be greater than 0."})
+        if seats_per_row > capacity:
+            raise serializers.ValidationError({"seats_per_row": "Seats per row cannot exceed capacity."})
+
+        return data
 
 class ShowtimeSerializer(serializers.ModelSerializer):
     movie_title = serializers.CharField(source='movie.title', read_only=True)
@@ -25,6 +41,7 @@ class ShowtimeSerializer(serializers.ModelSerializer):
         source="room",
         write_only=True
     )
+    is_full = serializers.SerializerMethodField()
 
     class Meta:
         model = Showtime
@@ -36,13 +53,22 @@ class ShowtimeSerializer(serializers.ModelSerializer):
             "show_time",
             "room",
             "room_id",
+            "seats_data",
+            "is_full",
             "ticket_price",
             "is_active",
         ]
+    
+    def get_is_full(self, obj):
+        # Returns True if all seats are booked
+        if not obj.seats_data:
+            return False
+        return all(not seat_info.get("available", True) for seat_info in obj.seats_data.values())
 
 class ShowtimeListSerializer(serializers.ModelSerializer):
     movie_title = serializers.CharField(source='movie.title', read_only=True)
     room = ScreeningRoomSerializer(read_only=True)
+    is_full = serializers.SerializerMethodField()
 
     class Meta:
         model = Showtime
@@ -52,8 +78,14 @@ class ShowtimeListSerializer(serializers.ModelSerializer):
             "show_date",
             "show_time",
             "room",
+            "is_full",
             "ticket_price",
         ]
+    
+    def get_is_full(self, obj):
+        if not obj.seats_data:
+            return False
+        return all(not seat_info.get("available", True) for seat_info in obj.seats_data.values())
 
 class MovieBasicSerializer(serializers.ModelSerializer):
     genre_detail = GenreSerializer(source='genre', read_only=True)
@@ -74,6 +106,7 @@ class MovieBasicSerializer(serializers.ModelSerializer):
 class ShowtimeDetailSerializer(serializers.ModelSerializer):
     movie = MovieBasicSerializer(read_only=True)
     room = ScreeningRoomSerializer(read_only=True)
+    is_full = serializers.SerializerMethodField()
 
     class Meta:
         model = Showtime
@@ -87,7 +120,14 @@ class ShowtimeDetailSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
             "room",
+            "seats_data",
+            "is_full",
         ]
+    
+    def get_is_full(self, obj):
+        if not obj.seats_data:
+            return False
+        return all(not seat_info.get("available", True) for seat_info in obj.seats_data.values())
 
 class CinemaSerializer(serializers.ModelSerializer):
     class Meta:
