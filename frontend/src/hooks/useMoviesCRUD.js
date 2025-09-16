@@ -35,6 +35,34 @@ const useMoviesCRUD = (user = null) => {
 
   const clearError = useCallback(() => setError(null), []);
 
+  const extractErrorMessage = useCallback((err) => {
+    if (err.response?.data) {
+      const errorData = err.response.data;
+
+      if (typeof errorData === 'object' && !Array.isArray(errorData)) {
+        const firstErrorKey = Object.keys(errorData)[0];
+        if (firstErrorKey) {
+          const firstError = errorData[firstErrorKey];
+          return Array.isArray(firstError) ? firstError[0] : firstError;
+        }
+      }
+
+      if (typeof errorData === 'string') {
+        return errorData;
+      }
+
+      if (errorData.message) {
+        return errorData.message;
+      }
+
+      if (errorData.detail) {
+        return errorData.detail;
+      }
+    }
+
+    return 'An unexpected error occurred';
+  }, []);
+
   const fetchMovies = useCallback(async (detail = 'summary') => {
     try {
       setLoading(true);
@@ -121,14 +149,14 @@ const useMoviesCRUD = (user = null) => {
         const errorMessage =
           err.message === 'staff or superuser permission required'
             ? err.message
-            : err.response?.data?.message || 'failed to create movie';
+            : extractErrorMessage(err) || 'failed to create movie';
         setError(errorMessage);
         throw err;
       } finally {
         setLoading(false);
       }
     },
-    [checkPermission]
+    [checkPermission, extractErrorMessage]
   );
 
   // update movie (requires staff permission)
@@ -148,14 +176,14 @@ const useMoviesCRUD = (user = null) => {
         const errorMessage =
           err.message === 'staff or superuser permission required'
             ? err.message
-            : err.response?.data?.message || 'failed to update movie';
+            : extractErrorMessage(err) || 'failed to update movie';
         setError(errorMessage);
         throw err;
       } finally {
         setLoading(false);
       }
     },
-    [checkPermission]
+    [checkPermission, extractErrorMessage]
   );
 
   // partial update movie (requires staff permission)
@@ -175,14 +203,14 @@ const useMoviesCRUD = (user = null) => {
         const errorMessage =
           err.message === 'staff or superuser permission required'
             ? err.message
-            : err.response?.data?.message || 'failed to update movie';
+            : extractErrorMessage(err) || 'failed to update movie';
         setError(errorMessage);
         throw err;
       } finally {
         setLoading(false);
       }
     },
-    [checkPermission]
+    [checkPermission, extractErrorMessage]
   );
 
   // delete movie (requires superuser permission)
@@ -200,14 +228,14 @@ const useMoviesCRUD = (user = null) => {
         const errorMessage =
           err.message === 'only superusers can delete movies'
             ? err.message
-            : err.response?.data?.message || 'failed to delete movie';
+            : extractErrorMessage(err) || 'failed to delete movie';
         setError(errorMessage);
         throw err;
       } finally {
         setLoading(false);
       }
     },
-    [checkPermission]
+    [checkPermission, extractErrorMessage]
   );
 
   return {
@@ -229,3 +257,4 @@ const useMoviesCRUD = (user = null) => {
 };
 
 export default useMoviesCRUD;
+  

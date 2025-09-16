@@ -191,6 +191,7 @@ const AdminMoviesPage = () => {
                 onSubmit={handleSubmit}
                 onCancel={handleCancel}
                 loading={formLoading}
+                existingMovies={movies}
               />
             </div>
           )}

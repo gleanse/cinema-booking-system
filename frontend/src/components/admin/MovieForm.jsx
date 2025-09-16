@@ -9,7 +9,13 @@ import {
 } from 'react-icons/fa';
 import { useGenres } from '../../hooks/useGenres';
 
-const MovieForm = ({ movie = null, onSubmit, onCancel, loading = false }) => {
+const MovieForm = ({
+  movie = null,
+  onSubmit,
+  onCancel,
+  loading = false,
+  existingMovies = [],
+}) => {
   const { genres } = useGenres();
   const [formData, setFormData] = useState({
     title: '',
@@ -81,7 +87,6 @@ const MovieForm = ({ movie = null, onSubmit, onCancel, loading = false }) => {
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
 
-    // clear error when user starts typing
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: '' }));
     }
@@ -97,6 +102,23 @@ const MovieForm = ({ movie = null, onSubmit, onCancel, loading = false }) => {
     }
   };
 
+  const extractServerErrors = (errorResponse) => {
+    const serverErrors = {};
+
+    if (errorResponse && typeof errorResponse === 'object') {
+      Object.keys(errorResponse).forEach((field) => {
+        const errorValue = errorResponse[field];
+        if (Array.isArray(errorValue)) {
+          serverErrors[field] = errorValue[0];
+        } else if (typeof errorValue === 'string') {
+          serverErrors[field] = errorValue;
+        }
+      });
+    }
+
+    return serverErrors;
+  };
+
   const validateForm = () => {
     const newErrors = {};
 
@@ -104,6 +126,25 @@ const MovieForm = ({ movie = null, onSubmit, onCancel, loading = false }) => {
       newErrors.title = 'Title is required';
     } else if (formData.title.length > 150) {
       newErrors.title = 'Title must be 150 characters or less';
+    } else {
+      if (!movie) {
+        const isDuplicate = existingMovies.some(
+          (existing) =>
+            existing.title.toLowerCase() === formData.title.toLowerCase().trim()
+        );
+        if (isDuplicate) {
+          newErrors.title = 'A movie with this title already exists';
+        }
+      } else {
+        const isDuplicate = existingMovies.some(
+          (existing) =>
+            existing.id !== movie.id &&
+            existing.title.toLowerCase() === formData.title.toLowerCase().trim()
+        );
+        if (isDuplicate) {
+          newErrors.title = 'A movie with this title already exists';
+        }
+      }
     }
 
     if (!formData.description.trim()) {
@@ -138,10 +179,15 @@ const MovieForm = ({ movie = null, onSubmit, onCancel, loading = false }) => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setErrors({});
 
-    if (validateForm()) {
+    if (!validateForm()) {
+      return;
+    }
+
+    try {
       // create formdata for multipart upload
       const submitData = new FormData();
 
@@ -157,7 +203,24 @@ const MovieForm = ({ movie = null, onSubmit, onCancel, loading = false }) => {
         submitData.append('remove_poster', 'true');
       }
 
-      onSubmit(submitData);
+      await onSubmit(submitData);
+    } catch (error) {
+      console.error('Form submission error:', error);
+
+      if (error.response?.data) {
+        const serverErrors = extractServerErrors(error.response.data);
+        if (Object.keys(serverErrors).length > 0) {
+          setErrors(serverErrors);
+        } else {
+          setErrors({
+            general: error.message || 'An error occurred. Please try again.',
+          });
+        }
+      } else {
+        setErrors({
+          general: error.message || 'An error occurred. Please try again.',
+        });
+      }
     }
   };
 
@@ -193,6 +256,13 @@ const MovieForm = ({ movie = null, onSubmit, onCancel, loading = false }) => {
             : 'Add a new movie to the system'}
         </p>
       </div>
+
+      {/* GENERAL ERROR */}
+      {errors.general && (
+        <div className="mb-6 bg-accent/10 border border-accent rounded-md p-4">
+          <p className="text-sm text-accent">{errors.general}</p>
+        </div>
+      )}
 
       <div className="space-y-4 sm:space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">

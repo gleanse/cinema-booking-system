@@ -1,10 +1,38 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { genreAPI } from '../api/api';
 
 export const useGenres = () => {
   const [genres, setGenres] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  const extractErrorMessage = useCallback((err) => {
+    if (err.response?.data) {
+      const errorData = err.response.data;
+
+      if (typeof errorData === 'object' && !Array.isArray(errorData)) {
+        const firstErrorKey = Object.keys(errorData)[0];
+        if (firstErrorKey) {
+          const firstError = errorData[firstErrorKey];
+          return Array.isArray(firstError) ? firstError[0] : firstError;
+        }
+      }
+
+      if (typeof errorData === 'string') {
+        return errorData;
+      }
+
+      if (errorData.message) {
+        return errorData.message;
+      }
+
+      if (errorData.detail) {
+        return errorData.detail;
+      }
+    }
+
+    return 'An unexpected error occurred';
+  }, []);
 
   const fetchGenres = async (includeCount = false) => {
     setLoading(true);
@@ -29,7 +57,7 @@ export const useGenres = () => {
       setGenres((prev) => [...prev, response.data]);
       return response.data;
     } catch (err) {
-      setError(err.response?.data || 'Failed to create genre');
+      setError(extractErrorMessage(err) || 'Failed to create genre');
       throw err;
     } finally {
       setLoading(false);
@@ -49,7 +77,7 @@ export const useGenres = () => {
       );
       return response.data;
     } catch (err) {
-      setError(err.response?.data || 'Failed to update genre');
+      setError(extractErrorMessage(err) || 'Failed to update genre');
       throw err;
     } finally {
       setLoading(false);
@@ -64,7 +92,7 @@ export const useGenres = () => {
       setGenres((prev) => prev.filter((genre) => genre.id !== id));
       return true;
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to delete genre');
+      setError(extractErrorMessage(err) || 'Failed to delete genre');
       throw err;
     } finally {
       setLoading(false);
@@ -78,7 +106,7 @@ export const useGenres = () => {
       const response = await genreAPI.getGenreDetails(id, includeCount);
       return response.data;
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to fetch genre');
+      setError(extractErrorMessage(err) || 'Failed to fetch genre');
       throw err;
     } finally {
       setLoading(false);

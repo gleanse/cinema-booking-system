@@ -1,7 +1,13 @@
 import { useState, useEffect } from 'react';
 import { FaSpinner } from 'react-icons/fa';
 
-const GenreForm = ({ genre = null, onSubmit, onCancel, loading = false }) => {
+const GenreForm = ({
+  genre = null,
+  onSubmit,
+  onCancel,
+  loading = false,
+  existingGenres = [],
+}) => {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -14,7 +20,13 @@ const GenreForm = ({ genre = null, onSubmit, onCancel, loading = false }) => {
         name: genre.name || '',
         description: genre.description || '',
       });
+    } else {
+      setFormData({
+        name: '',
+        description: '',
+      });
     }
+    setErrors({});
   }, [genre]);
 
   const handleChange = (e) => {
@@ -32,6 +44,23 @@ const GenreForm = ({ genre = null, onSubmit, onCancel, loading = false }) => {
     }
   };
 
+  const extractServerErrors = (errorResponse) => {
+    const serverErrors = {};
+
+    if (errorResponse && typeof errorResponse === 'object') {
+      Object.keys(errorResponse).forEach((field) => {
+        const errorValue = errorResponse[field];
+        if (Array.isArray(errorValue)) {
+          serverErrors[field] = errorValue[0];
+        } else if (typeof errorValue === 'string') {
+          serverErrors[field] = errorValue;
+        }
+      });
+    }
+
+    return serverErrors;
+  };
+
   const validateForm = () => {
     const newErrors = {};
 
@@ -39,6 +68,25 @@ const GenreForm = ({ genre = null, onSubmit, onCancel, loading = false }) => {
       newErrors.name = 'Genre name is required';
     } else if (formData.name.length > 70) {
       newErrors.name = 'Genre name must be 70 characters or less';
+    } else {
+      if (!genre) {
+        const isDuplicate = existingGenres.some(
+          (existing) =>
+            existing.name.toLowerCase() === formData.name.toLowerCase().trim()
+        );
+        if (isDuplicate) {
+          newErrors.name = 'A genre with this name already exists';
+        }
+      } else {
+        const isDuplicate = existingGenres.some(
+          (existing) =>
+            existing.id !== genre.id &&
+            existing.name.toLowerCase() === formData.name.toLowerCase().trim()
+        );
+        if (isDuplicate) {
+          newErrors.name = 'A genre with this name already exists';
+        }
+      }
     }
 
     if (!formData.description.trim()) {
@@ -51,10 +99,33 @@ const GenreForm = ({ genre = null, onSubmit, onCancel, loading = false }) => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (validateForm()) {
-      onSubmit(formData);
+    setErrors({});
+
+    if (!validateForm()) {
+      return;
+    }
+
+    try {
+      await onSubmit(formData);
+    } catch (error) {
+      console.error('Form submission error:', error);
+
+      if (error.response?.data) {
+        const serverErrors = extractServerErrors(error.response.data);
+        if (Object.keys(serverErrors).length > 0) {
+          setErrors(serverErrors);
+        } else {
+          setErrors({
+            general: error.message || 'An error occurred. Please try again.',
+          });
+        }
+      } else {
+        setErrors({
+          general: error.message || 'An error occurred. Please try again.',
+        });
+      }
     }
   };
 
@@ -72,6 +143,13 @@ const GenreForm = ({ genre = null, onSubmit, onCancel, loading = false }) => {
             : 'Add a new genre to the system'}
         </p>
       </div>
+
+      {/* GENERAL ERROR */}
+      {errors.general && (
+        <div className="mb-6 bg-accent/10 border border-accent rounded-md p-4">
+          <p className="text-sm text-accent">{errors.general}</p>
+        </div>
+      )}
 
       <div className="space-y-4 sm:space-y-6">
         <div>

@@ -143,6 +143,7 @@ const GenresPage = () => {
                 onSubmit={handleSubmit}
                 onCancel={handleCancel}
                 loading={formLoading}
+                existingGenres={genres}
               />
             </div>
           )}
