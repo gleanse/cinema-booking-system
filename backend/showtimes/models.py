@@ -86,7 +86,7 @@ class Showtime(models.Model):
         blank=True,
         related_name="showtimes",
     )
-    seats_data = models.JSONField(default=dict) # cinema room seats layout and code location, and availability status
+    seats_data = models.JSONField(default=dict,blank=True) # cinema room seats layout and code location, and availability status
     show_date = models.DateField()
     show_time = models.TimeField()
     ticket_price = models.DecimalField(max_digits=8, decimal_places=2, default=150.00)

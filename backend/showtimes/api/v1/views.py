@@ -165,6 +165,45 @@ class CinemaDetailView(BaseDetailView):
         cinema = self.get_object(pk)
         cinema.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+    
+class CinemaShowtimesView(BaseDetailView):
+    model = Cinema
+    not_found_message = "Cinema not found"
+
+    def get_throttles(self):
+        return [PublicEndpointThrottle()]
+    
+    def get_permissions(self):
+        return [AllowAny()]
+    
+    def get(self, request, cinema_id):
+        cinema = self.get_object(cinema_id)
+        
+        showtimes = Showtime.objects.filter(
+            room__cinema=cinema, 
+            is_active=True
+        ).select_related('room', 'movie').order_by('show_date', 'show_time')
+
+        date_filter = request.query_params.get('date')
+        if date_filter:
+            showtimes = showtimes.filter(show_date=date_filter)
+
+        movie_id = request.query_params.get('movie')
+        if movie_id:
+            showtimes = showtimes.filter(movie_id=movie_id)
+        
+        serializer = ShowtimeDetailSerializer(showtimes, many=True)
+        
+        response_data = {
+            'cinema': {
+                'id': cinema.id,
+                'name': cinema.name,
+                'location': cinema.location
+            },
+            'showtimes': serializer.data
+        }
+        
+        return Response(response_data, status=status.HTTP_200_OK)
 
 # SCREENING ROOM VIEWS
 class ScreeningRoomListView(APIView):
