@@ -5,7 +5,7 @@ import math
 
 
 class Cinema(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, unique=True)
     location = models.CharField(max_length=255, blank=True, null=True)
 
     def __str__(self):

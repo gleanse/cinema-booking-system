@@ -137,6 +137,18 @@ class CinemaSerializer(serializers.ModelSerializer):
             "name",
             "location",
         ]
+    
+    def validate_name(self, value):
+        value = value.strip()
+
+        if self.instance is None:
+            if Cinema.objects.filter(name__iexact=value).exists():
+                raise serializers.ValidationError("A cinema with this name already exists.")
+
+        else:
+            if Cinema.objects.filter(name__iexact=value).exclude(id=self.instance.id).exists():
+                raise serializers.ValidationError("A cinema with this name already exists.")
+        return value
 
 class CinemaDetailSerializer(serializers.ModelSerializer):
     screening_rooms = ScreeningRoomSerializer(many=True, read_only=True, source="rooms")
