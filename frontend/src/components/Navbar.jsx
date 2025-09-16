@@ -19,7 +19,7 @@ const Navbar = () => {
   const navItems = [
     { name: 'Home', to: '/', icon: HiOutlineHome },
     { name: 'Movies', to: '/movies', icon: HiOutlineFilm },
-    { name: 'Cinemas', to: '/cinema', icon: HiOutlineBuildingOffice2 },
+    { name: 'Cinemas', to: '/cinemas', icon: HiOutlineBuildingOffice2 },
   ];
 
   return (
