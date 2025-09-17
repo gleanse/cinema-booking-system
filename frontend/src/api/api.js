@@ -238,6 +238,24 @@ export const screeningRoomAPI = {
   deleteScreeningRoom: (id) => api.delete(`rooms/${id}/`),
 };
 
+// BOOKING api functions
+export const bookingAPI = {
+  // CREATE new booking
+  createBooking: (bookingData) => api.post('bookings/', bookingData),
+
+  // GET booking by reference
+  getBooking: (bookingReference) => api.get(`bookings/${bookingReference}/`),
+
+  // CONFIRM payment
+  confirmPayment: (paymentData) => api.post('payments/confirm/', paymentData),
+
+  // DOWNLOAD ticket
+  downloadTicket: (bookingReference) =>
+    api.get(`bookings/${bookingReference}/download-ticket/`, {
+      responseType: 'blob',
+    }),
+};
+
 export const tokenUtils = {
   isAuthenticated: () => {
     const localToken = localStorage.getItem('token');

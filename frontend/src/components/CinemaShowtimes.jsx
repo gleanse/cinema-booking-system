@@ -192,7 +192,7 @@ const CinemaShowtimes = ({ cinema, showtimes, onBookTicket }) => {
                         </div>
 
                         <button
-                          onClick={() => handleBookTicket(showtime)}
+                          onClick={() => onBookTicket(showtime)}
                           className="bg-primary hover:bg-primary/90 text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200 cursor-pointer whitespace-nowrap"
                         >
                           Book Now

@@ -10,8 +10,7 @@ const CinemaShowtimesPage = () => {
     useCinemaShowtimes(cinemaId);
 
   const handleBookTicket = (showtime) => {
-    console.log('Book ticket for showtime:', showtime);
-    // TODO: implement booking logic
+    navigate(`/booking/${showtime.id}`);
   };
 
   const handleGoBack = () => {

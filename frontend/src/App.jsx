@@ -10,6 +10,8 @@ import MoviesPage from './pages/MoviesPage';
 import CinemaListPage from './pages/CinemaListPage';
 import CinemaShowtimesPage from './pages/CinemaShowtimesPage';
 import ProtectedRoute from './components/admin/ProtectedRoute';
+import BookingPage from './pages/BookingPage';
+import BookingConfirmationPage from './pages/BookingConfirmationPage';
 // ADMIN PAGES
 import Sidebar from './components/admin/Sidebar';
 import GenresPage from './pages/admin/GenresPage';
@@ -58,6 +60,11 @@ function App() {
             <Route
               path="/cinemas/:cinemaId/showtimes"
               element={<CinemaShowtimesPage />}
+            />
+            <Route path="/booking/:showtimeId" element={<BookingPage />} />
+            <Route
+              path="/booking-confirmation"
+              element={<BookingConfirmationPage />}
             />
             <Route path="/login" element={<LoginPage />} />
 
