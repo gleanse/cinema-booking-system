@@ -227,9 +227,9 @@ if DEBUG:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 if not DEBUG:
-    XENDIT_SECRET_KEY = config('XENDIT_SECRET_KEY')
-    XENDIT_PUBLIC_KEY = config('XENDIT_PUBLIC_KEY')
-    XENDIT_CALLBACK_TOKEN = config('XENDIT_CALLBACK_TOKEN')
+    XENDIT_SECRET_KEY = config('XENDIT_SECRET_KEY', default=None)
+    XENDIT_PUBLIC_KEY = config('XENDIT_PUBLIC_KEY', default=None)
+    XENDIT_CALLBACK_TOKEN = config('XENDIT_CALLBACK_TOKEN', default=None)
 else:
     XENDIT_SECRET_KEY = None
     XENDIT_PUBLIC_KEY = None
