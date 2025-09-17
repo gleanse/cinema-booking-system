@@ -99,7 +99,7 @@ const CustomerInfoForm = ({ onCustomerInfo, onBack }) => {
                   name="name"
                   value={formData.name}
                   onChange={handleInputChange}
-                  className={`pl-10 w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-colors duration-200 ${
+                  className={`text-normal pl-10 w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-colors duration-200 ${
                     errors.name
                       ? 'border-accent focus:ring-accent'
                       : 'border-inputbrdr focus:ring-primary'
@@ -129,7 +129,7 @@ const CustomerInfoForm = ({ onCustomerInfo, onBack }) => {
                   name="email"
                   value={formData.email}
                   onChange={handleInputChange}
-                  className={`pl-10 w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-colors duration-200 ${
+                  className={`text-normal pl-10 w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-colors duration-200 ${
                     errors.email
                       ? 'border-accent focus:ring-accent'
                       : 'border-inputbrdr focus:ring-primary'
@@ -159,7 +159,7 @@ const CustomerInfoForm = ({ onCustomerInfo, onBack }) => {
                   name="phone"
                   value={formData.phone}
                   onChange={handleInputChange}
-                  className="pl-10 w-full px-4 py-3 border border-inputbrdr rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-colors duration-200"
+                  className="text-normal pl-10 w-full px-4 py-3 border border-inputbrdr rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-colors duration-200"
                   placeholder="+1 (555) 123-4567"
                 />
               </div>
@@ -182,7 +182,7 @@ const CustomerInfoForm = ({ onCustomerInfo, onBack }) => {
                   value={formData.comments}
                   onChange={handleInputChange}
                   rows={3}
-                  className="pl-10 w-full px-4 py-3 border border-inputbrdr rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-colors duration-200 resize-none"
+                  className="text-normal pl-10 w-full px-4 py-3 border border-inputbrdr rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-colors duration-200 resize-none"
                   placeholder="Any special requests or comments..."
                 />
               </div>
