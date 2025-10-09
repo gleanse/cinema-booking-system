@@ -92,37 +92,6 @@ const useBookingsCRUD = () => {
     [extractErrorMessage]
   );
 
-  const confirmPayment = useCallback(
-    async (paymentData) => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        console.log('Confirming payment with data:', paymentData);
-
-        const response = await bookingAPI.confirmPayment(paymentData);
-        console.log('Payment confirmed successfully:', response.data);
-
-        setBooking(response.data);
-        return response.data;
-      } catch (err) {
-        console.error('Payment confirmation error details:', {
-          message: err.message,
-          response: err.response,
-          data: err.response?.data,
-        });
-
-        const errorMessage =
-          extractErrorMessage(err) || 'Failed to confirm payment';
-        setError(errorMessage);
-        throw err;
-      } finally {
-        setLoading(false);
-      }
-    },
-    [extractErrorMessage]
-  );
-
   const downloadTicket = useCallback(
     async (bookingReference) => {
       try {
@@ -160,7 +129,6 @@ const useBookingsCRUD = () => {
     error,
     createBooking,
     getBooking,
-    confirmPayment,
     downloadTicket,
     clearError,
   };

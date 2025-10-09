@@ -14,7 +14,10 @@ const BookingPage = () => {
   const [bookingData, setBookingData] = useState({
     quantity: 1,
     selectedSeats: [],
-    customerInfo: null,
+    customerName: '',
+    customerEmail: '',
+    customerPhone: '',
+    specialRequests: '',
   });
 
   const { showtime, loading, error, refetch } = useShowtimeDetails(showtimeId);
@@ -37,7 +40,13 @@ const BookingPage = () => {
   };
 
   const handleCustomerInfo = (customerInfo) => {
-    setBookingData((prev) => ({ ...prev, customerInfo }));
+    setBookingData((prev) => ({
+      ...prev,
+      customerName: customerInfo.name,
+      customerEmail: customerInfo.email,
+      customerPhone: customerInfo.phone,
+      specialRequests: customerInfo.specialRequests || '',
+    }));
     setCurrentStep(steps.payment);
   };
 
@@ -54,11 +63,16 @@ const BookingPage = () => {
   };
 
   const handleBookingComplete = (paymentData) => {
-    // FIXED: now receiving paymentData parameter
-    // TODO: all mock change later
     navigate('/booking-confirmation', {
       state: {
-        bookingData,
+        bookingData: {
+          ...bookingData,
+          customerInfo: {
+            name: bookingData.customerName,
+            email: bookingData.customerEmail,
+            phone: bookingData.customerPhone,
+          },
+        },
         showtime,
         paymentData,
       },

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   HiPlus,
   HiMinus,
@@ -12,7 +12,15 @@ import {
 
 const QuantitySelector = ({ showtime, onQuantitySelected, onBack }) => {
   const [quantity, setQuantity] = useState(1);
-  const maxTickets = 10;
+  const availableSeats = showtime?.available_seats || 0;
+  const maxTickets = Math.min(availableSeats, 10);
+
+  // reset quantity if it exceeds new maxTickets
+  useEffect(() => {
+    if (quantity > maxTickets) {
+      setQuantity(Math.max(1, maxTickets));
+    }
+  }, [maxTickets, quantity]);
 
   const handleIncrement = () => {
     if (quantity < maxTickets) {
@@ -74,7 +82,6 @@ const QuantitySelector = ({ showtime, onQuantitySelected, onBack }) => {
                 )}
               </div>
 
-              {/* MOVIE DETAILS */}
               <div className="flex-grow min-w-0">
                 <h1 className="text-xl font-bold text-foreground mb-2 truncate">
                   {showtime.movie.title}
@@ -119,7 +126,7 @@ const QuantitySelector = ({ showtime, onQuantitySelected, onBack }) => {
             <div className="flex items-center justify-center gap-6 mb-6">
               <button
                 onClick={handleDecrement}
-                disabled={quantity <= 1}
+                disabled={quantity <= 1 || availableSeats === 0}
                 className="w-12 h-12 bg-primary/10 hover:bg-primary/20 disabled:bg-neutral/10 disabled:cursor-not-allowed rounded-xl flex items-center justify-center transition-all duration-200 group"
               >
                 <HiMinus className="h-5 w-5 text-primary group-disabled:text-neutral/50" />
@@ -133,7 +140,7 @@ const QuantitySelector = ({ showtime, onQuantitySelected, onBack }) => {
 
               <button
                 onClick={handleIncrement}
-                disabled={quantity >= maxTickets}
+                disabled={quantity >= maxTickets || availableSeats === 0}
                 className="w-12 h-12 bg-primary/10 hover:bg-primary/20 disabled:bg-neutral/10 disabled:cursor-not-allowed rounded-xl flex items-center justify-center transition-all duration-200 group"
               >
                 <HiPlus className="h-5 w-5 text-primary group-disabled:text-neutral/50" />
@@ -141,7 +148,14 @@ const QuantitySelector = ({ showtime, onQuantitySelected, onBack }) => {
             </div>
 
             <p className="text-center text-sm text-neutral mb-6">
-              Maximum {maxTickets} tickets per booking
+              {availableSeats > 0 ? (
+                <>
+                  Maximum {maxTickets} tickets per booking • {availableSeats}{' '}
+                  seats available
+                </>
+              ) : (
+                'No seats available for this showtime'
+              )}
             </p>
 
             <div className="bg-gradient-to-r from-neutral/5 to-neutral/10 rounded-xl p-4 mb-6">
@@ -169,10 +183,17 @@ const QuantitySelector = ({ showtime, onQuantitySelected, onBack }) => {
 
             <button
               onClick={handleContinue}
-              className="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 flex items-center justify-center space-x-2 group"
+              disabled={availableSeats === 0}
+              className="w-full bg-primary hover:bg-primary/90 disabled:bg-neutral/30 disabled:cursor-not-allowed text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 flex items-center justify-center space-x-2 group"
             >
-              <span>Continue to Seat Selection</span>
-              <HiArrowRight className="h-5 w-5 transition-transform duration-200 group-hover:translate-x-1" />
+              <span>
+                {availableSeats === 0
+                  ? 'No Seats Available'
+                  : 'Continue to Seat Selection'}
+              </span>
+              {availableSeats > 0 && (
+                <HiArrowRight className="h-5 w-5 transition-transform duration-200 group-hover:translate-x-1" />
+              )}
             </button>
           </div>
         </div>

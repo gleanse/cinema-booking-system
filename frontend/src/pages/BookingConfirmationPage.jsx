@@ -13,15 +13,16 @@ import {
 } from 'react-icons/hi2';
 import useBookingsCRUD from '../hooks/useBookingsCRUD';
 
+const getShortBookingRef = (uuid) => {
+  return uuid.replace(/-/g, '').slice(0, 8).toUpperCase();
+};
+
 const BookingConfirmationPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { bookingData, showtime } = location.state || {};
+  const { bookingData, showtime, paymentData } = location.state || {};
 
-  // fully MOCK  for now
-  const [bookingReference] = useState(`BK${Date.now().toString().slice(-8)}`);
   const [isDownloading, setIsDownloading] = useState(false);
-
   const { downloadTicket, loading, error } = useBookingsCRUD();
 
   useEffect(() => {
@@ -30,7 +31,16 @@ const BookingConfirmationPage = () => {
     }
   }, [bookingData, showtime, navigate]);
 
+  // all bookings are now instantly paid with mock payment
+  const bookingReference = paymentData?.booking_reference;
+  const isPaid = true; // all bookings are instantly paid now
+
   const handleDownloadTicket = async () => {
+    if (!isPaid) {
+      alert('Ticket download is only available for paid bookings.');
+      return;
+    }
+
     try {
       setIsDownloading(true);
       await downloadTicket(bookingReference);
@@ -42,9 +52,10 @@ const BookingConfirmationPage = () => {
   };
 
   const handleShareBooking = async () => {
+    const shortRef = getShortBookingRef(bookingReference);
     const shareData = {
       title: 'Movie Ticket Booking',
-      text: `I just booked tickets for "${showtime.movie.title}"! Booking ref: ${bookingReference}`,
+      text: `I just booked tickets for "${showtime.movie.title}"! Booking #: ${shortRef}`,
       url: window.location.href,
     };
 
@@ -58,7 +69,7 @@ const BookingConfirmationPage = () => {
       navigator.clipboard.writeText(
         `Movie: ${
           showtime.movie.title
-        }\nBooking Reference: ${bookingReference}\nSeats: ${bookingData.selectedSeats.join(
+        }\nBooking #: ${shortRef}\nSeats: ${bookingData.selectedSeats.join(
           ', '
         )}`
       );
@@ -87,7 +98,9 @@ const BookingConfirmationPage = () => {
     return null;
   }
 
-  const totalAmount = (showtime.ticket_price * bookingData.quantity).toFixed(2);
+  const totalAmount = (
+    showtime.ticket_price * bookingData.selectedSeats.length
+  ).toFixed(2);
 
   return (
     <div className="min-h-screen bg-background">
@@ -101,7 +114,7 @@ const BookingConfirmationPage = () => {
         </button>
 
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-full mb-4">
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full mb-4 bg-green-100">
             <HiCheckCircle className="h-12 w-12 text-green-600" />
           </div>
           <h1 className="text-3xl font-bold text-foreground mb-2">
@@ -113,7 +126,7 @@ const BookingConfirmationPage = () => {
           <div className="mt-4 inline-flex items-center bg-primary/10 px-4 py-2 rounded-lg">
             <HiTicket className="h-5 w-5 text-primary mr-2" />
             <span className="font-semibold text-primary">
-              Booking Reference: {bookingReference}
+              Booking #: {getShortBookingRef(bookingReference)}
             </span>
           </div>
         </div>
@@ -141,7 +154,7 @@ const BookingConfirmationPage = () => {
                 </h2>
                 <div className="flex flex-wrap items-center gap-2 mb-2">
                   <span className="bg-primary/20 text-primary px-2 py-1 rounded text-xs font-medium">
-                    {showtime.movie.genre_detail.name}
+                    {showtime.movie.genre_detail?.name || 'Movie'}
                   </span>
                   <span className="bg-neutral/20 text-foreground px-2 py-1 rounded text-xs font-medium">
                     {showtime.movie.age_rating}
@@ -151,14 +164,12 @@ const BookingConfirmationPage = () => {
             </div>
           </div>
 
-          {/* booking details */}
           <div className="p-6">
             <h3 className="text-lg font-semibold text-foreground mb-4">
               Booking Details
             </h3>
 
             <div className="space-y-4">
-              {/* date & time */}
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
                   <HiCalendarDays className="h-5 w-5 text-primary" />
@@ -173,20 +184,20 @@ const BookingConfirmationPage = () => {
                 </div>
               </div>
 
-              {/* cinema & room */}
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
                   <HiMapPin className="h-5 w-5 text-primary" />
                 </div>
                 <div>
                   <p className="font-medium text-foreground">
-                    {showtime.room.cinema_name}
+                    {showtime.room?.cinema_name || 'Cinema'}
                   </p>
-                  <p className="text-sm text-neutral">{showtime.room.name}</p>
+                  <p className="text-sm text-neutral">
+                    {showtime.room?.name || 'Room'}
+                  </p>
                 </div>
               </div>
 
-              {/* customer info */}
               {bookingData.customerInfo && (
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
@@ -203,7 +214,6 @@ const BookingConfirmationPage = () => {
                 </div>
               )}
 
-              {/* seats */}
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
                   <HiTicket className="h-5 w-5 text-primary" />
@@ -213,14 +223,15 @@ const BookingConfirmationPage = () => {
                     Seats: {bookingData.selectedSeats.join(', ')}
                   </p>
                   <p className="text-sm text-neutral">
-                    {bookingData.quantity}{' '}
-                    {bookingData.quantity === 1 ? 'ticket' : 'tickets'}
+                    {bookingData.selectedSeats.length}{' '}
+                    {bookingData.selectedSeats.length === 1
+                      ? 'ticket'
+                      : 'tickets'}
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* payment summary */}
             <div className="bg-gradient-to-r from-neutral/5 to-neutral/10 rounded-xl p-4 mt-6">
               <div className="flex justify-between items-center mb-2">
                 <span className="text-neutral">Price per ticket:</span>
@@ -231,7 +242,7 @@ const BookingConfirmationPage = () => {
               <div className="flex justify-between items-center mb-2">
                 <span className="text-neutral">Quantity:</span>
                 <span className="font-medium text-foreground">
-                  {bookingData.quantity}
+                  {bookingData.selectedSeats.length}
                 </span>
               </div>
               <div className="border-t border-neutral/20 pt-2">
@@ -249,7 +260,6 @@ const BookingConfirmationPage = () => {
         </div>
 
         <div className="space-y-3">
-          {/* DOWNLOAD */}
           <button
             onClick={handleDownloadTicket}
             disabled={isDownloading || loading}
@@ -291,6 +301,7 @@ const BookingConfirmationPage = () => {
             <li>• Please arrive at least 15 minutes before showtime</li>
             <li>• Keep your booking reference for entry</li>
             <li>• Download your ticket or show this confirmation</li>
+            <li>• Tickets are non-refundable and non-transferable</li>
           </ul>
         </div>
       </div>

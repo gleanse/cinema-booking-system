@@ -238,16 +238,13 @@ export const screeningRoomAPI = {
   deleteScreeningRoom: (id) => api.delete(`rooms/${id}/`),
 };
 
-// BOOKING api functions
+// BOOKING api functions - UPDATED FOR MOCK PAYMENT
 export const bookingAPI = {
-  // CREATE new booking
+  // CREATE new booking (now instantly confirmed with mock payment)
   createBooking: (bookingData) => api.post('bookings/', bookingData),
 
   // GET booking by reference
   getBooking: (bookingReference) => api.get(`bookings/${bookingReference}/`),
-
-  // CONFIRM payment
-  confirmPayment: (paymentData) => api.post('payments/confirm/', paymentData),
 
   // DOWNLOAD ticket
   downloadTicket: (bookingReference) =>
