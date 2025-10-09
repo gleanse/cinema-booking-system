@@ -107,6 +107,7 @@ class ShowtimeDetailSerializer(serializers.ModelSerializer):
     movie = MovieBasicSerializer(read_only=True)
     room = ScreeningRoomSerializer(read_only=True)
     is_full = serializers.SerializerMethodField()
+    available_seats = serializers.SerializerMethodField()
 
     class Meta:
         model = Showtime
@@ -122,12 +123,18 @@ class ShowtimeDetailSerializer(serializers.ModelSerializer):
             "room",
             "seats_data",
             "is_full",
+            "available_seats",
         ]
     
     def get_is_full(self, obj):
         if not obj.seats_data:
             return False
         return all(not seat_info.get("available", True) for seat_info in obj.seats_data.values())
+    
+    def get_available_seats(self, obj):
+        if not obj.seats_data:
+            return 0
+        return sum(1 for seat_info in obj.seats_data.values() if seat_info.get("available", True))
 
 class CinemaSerializer(serializers.ModelSerializer):
     class Meta:

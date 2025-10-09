@@ -1,6 +1,5 @@
 from rest_framework import serializers
 from bookings.models import Booking
-from showtimes.models import Showtime
 
 class BookingSerializer(serializers.ModelSerializer):
     showtime_details = serializers.SerializerMethodField()
@@ -22,6 +21,7 @@ class BookingSerializer(serializers.ModelSerializer):
             'payment_status',
             'payment_reference',
             'payment_gateway',
+            'payment_method',
             'payment_date',
             'created_at',
             'expires_at',
@@ -33,6 +33,7 @@ class BookingSerializer(serializers.ModelSerializer):
             'payment_status',
             'payment_reference',
             'payment_gateway',
+            'payment_method',
             'payment_date',
             'created_at',
             'expires_at',
@@ -74,25 +75,5 @@ class BookingSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError({
                     'seats': f"Seats {unavailable_seats} are not available."
                 })
-        
-        return data
-
-class PaymentSerializer(serializers.Serializer):
-    booking_reference = serializers.UUIDField()
-    payment_reference = serializers.CharField(max_length=100)
-    payment_gateway = serializers.CharField(max_length=50)
-    
-    def validate(self, data):
-        try:
-            booking = Booking.objects.get(booking_reference=data['booking_reference'])
-            
-            if booking.payment_status != Booking.PAYMENT_STATUS_PENDING:
-                raise serializers.ValidationError("Booking is not in pending payment status.")
-            
-            if booking.is_expired():
-                raise serializers.ValidationError("Booking has expired.")
-                
-        except Booking.DoesNotExist:
-            raise serializers.ValidationError("Booking not found.")
         
         return data

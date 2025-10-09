@@ -6,121 +6,316 @@
     <style>
         @page {
             size: A4;
-            margin: 1cm;
+            margin: 0.8cm;
         }
+
         body {
             font-family: Arial, sans-serif;
-            line-height: 1.6;
+            line-height: 1.3;
             color: #333;
+            margin: 0;
+            padding: 0;
+            font-size: 14px;
         }
+
         .ticket {
-            border: 2px solid #000;
-            padding: 20px;
-            max-width: 600px;
+            width: 100%;
+            max-width: 100%;
             margin: 0 auto;
+            border: 3px solid #2c5282;
         }
-        .header {
+
+        .ticket-header {
+            background-color: #2c5282;
+            color: white;
+            padding: 12px 15px;
             text-align: center;
-            border-bottom: 2px solid #000;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
         }
-        .movie-title {
+
+        .cinema-name {
             font-size: 24px;
             font-weight: bold;
+            letter-spacing: 2px;
             margin-bottom: 5px;
         }
-        .booking-info {
-            margin-bottom: 20px;
-        }
-        .info-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 5px;
-        }
-        .info-label {
+
+        .status-badge {
+            background-color: #48bb78;
+            color: white;
+            padding: 5px 15px;
+            font-size: 11px;
             font-weight: bold;
-            width: 120px;
+            text-transform: uppercase;
         }
-        .seats {
-            background-color: #f0f0f0;
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 20px;
+
+        .ticket-body {
+            padding: 12px 15px;
+            background-color: white;
         }
-        .qr-code {
+
+        .movie-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2c5282;
             text-align: center;
-            margin-top: 20px;
+            margin-bottom: 6px;
+            padding-bottom: 6px;
+            border-bottom: 2px solid #e2e8f0;
         }
-        .footer {
+
+        .movie-tags {
             text-align: center;
-            margin-top: 30px;
+            margin-bottom: 12px;
+        }
+
+        .tag {
+            background-color: #edf2f7;
+            padding: 3px 10px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #4a5568;
+            margin: 0 4px;
+        }
+
+        .info-table {
+            width: 100%;
+            margin-bottom: 12px;
+            border-collapse: collapse;
+        }
+
+        .info-table td {
+            padding: 8px;
+            vertical-align: top;
+            width: 50%;
+        }
+
+        .info-label {
+            font-size: 10px;
+            font-weight: bold;
+            color: #718096;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 3px;
+        }
+
+        .info-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .seats-section {
+            background-color: #f7fafc;
+            padding: 8px;
+            text-align: center;
+            margin: 10px 0;
+            border: 2px dashed #cbd5e0;
+        }
+
+        .seats-title {
+            font-size: 10px;
+            font-weight: bold;
+            color: #4a5568;
+            text-transform: uppercase;
+            margin-bottom: 3px;
+        }
+
+        .seats-numbers {
+            font-size: 16px;
+            font-weight: bold;
+            color: #2c5282;
+            margin: 3px 0;
+        }
+
+        .seats-count {
+            font-size: 10px;
+            color: #718096;
+        }
+
+        .payment-table {
+            width: 100%;
+            margin-bottom: 10px;
+            border-collapse: collapse;
+        }
+
+        .payment-table td {
+            padding: 6px;
+            vertical-align: top;
+            width: 33.33%;
+        }
+
+        .total-section {
+            background-color: #2c5282;
+            color: white;
+            padding: 8px;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .total-label {
+            font-size: 10px;
+            margin-bottom: 2px;
+        }
+
+        .total-amount {
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .qr-section {
+            background-color: #f7fafc;
+            padding: 15px;
+            border: 2px solid #2c5282;
+            text-align: center;
+        }
+
+        .qr-table {
+            width: 100%;
+        }
+
+        .qr-table td {
+            vertical-align: middle;
+            text-align: center;
+        }
+
+        .qr-instructions {
+            font-size: 11px;
+            color: #4a5568;
+            line-height: 1.5;
+            padding-top: 10px;
+        }
+
+        .qr-instructions strong {
+            color: #2d3748;
             font-size: 12px;
-            color: #666;
+        }
+
+        .qr-code {
+            padding: 15px;
+            background-color: white;
+            border: 3px solid #2c5282;
+            text-align: center;
+            margin: 0 auto 10px auto;
+            display: inline-block;
+        }
+
+        .qr-title {
+            font-size: 13px;
+            font-weight: bold;
+            color: #2c5282;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+
+        .ticket-footer {
+            background-color: #2d3748;
+            color: white;
+            padding: 10px 15px;
+            font-size: 10px;
+            text-align: center;
+        }
+
+        .booking-ref {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            margin-top: 5px;
+        }
+
+        .divider {
+            border-top: 1px dashed #cbd5e0;
+            margin: 15px 0;
         }
     </style>
 </head>
 <body>
     <div class="ticket">
-        <div class="header">
-            <h1>CINEMA TICKET</h1>
+        <!-- Header -->
+        <div class="ticket-header">
+            <div class="cinema-name">MOVIE TICKET</div>
+            <div class="status-badge">CONFIRMED</div>
         </div>
-        
-        <div class="movie-title">{{ movie.title }}</div>
-        
-        <div class="booking-info">
-            <div class="info-row">
-                <span class="info-label">Booking Reference:</span>
-                <span>{{ booking.booking_reference }}</span>
+
+        <!-- Body -->
+        <div class="ticket-body">
+            <!-- Movie Title -->
+            <div class="movie-title">{{ movie.title }}</div>
+
+            <!-- Movie Tags -->
+            <div class="movie-tags">
+                <span class="tag">{{ movie.genre_detail.name }}</span>
+                <span class="tag">{{ movie.age_rating }}</span>
+                <span class="tag">{{ movie.duration }} min</span>
             </div>
-            <div class="info-row">
-                <span class="info-label">Date & Time:</span>
-                <span>{{ showtime.show_date }} {{ showtime.show_time }}</span>
+
+            <!-- Info Grid -->
+            <table class="info-table">
+                <tr>
+                    <td>
+                        <div class="info-label">Date & Time</div>
+                        <div class="info-value">{{ showtime.show_date }} at {{ showtime.show_time }}</div>
+                    </td>
+                    <td>
+                        <div class="info-label">Cinema</div>
+                        <div class="info-value">{{ cinema.name }}</div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="info-label">Room / Seats</div>
+                        <div class="info-value">{{ room.name }} - {{ booking.seats|join:", " }}</div>
+                    </td>
+                    <td>
+                        <div class="info-label">Customer</div>
+                        <div class="info-value">{{ booking.customer_name }}</div>
+                    </td>
+                </tr>
+            </table>
+
+            <!-- QR Code Section -->
+            {% if booking.qr_code %}
+            <div class="qr-section">
+                <div class="qr-title">Scan QR Code for Entry</div>
+                <div class="qr-code">
+                    <img src="{{ booking.qr_code.path }}" width="150" height="150" alt="QR Code">
+                </div>
+                <div class="qr-instructions">
+                    <strong>How to Use:</strong> Arrive 30 min early • Scan at entrance • Non-refundable
+                </div>
             </div>
-            <div class="info-row">
-                <span class="info-label">Cinema:</span>
-                <span>{{ cinema.name }}</span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">Room:</span>
-                <span>{{ room.name }}</span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">Customer:</span>
-                <span>{{ booking.customer_name }}</span>
+            {% endif %}
+
+            <!-- Payment Info -->
+            <table class="payment-table">
+                <tr>
+                    <td>
+                        <div class="info-label">Payment Method</div>
+                        <div class="info-value">{{ booking.get_payment_method_display|default:"Credit Card" }}</div>
+                    </td>
+                    <td>
+                        <div class="info-label">Payment Status</div>
+                        <div class="info-value">{{ booking.get_payment_status_display }}</div>
+                    </td>
+                    <td>
+                        <div class="info-label">Tickets</div>
+                        <div class="info-value">{{ booking.number_of_tickets }}</div>
+                    </td>
+                </tr>
+            </table>
+
+            <!-- Total Amount -->
+            <div class="total-section">
+                <div class="total-label">TOTAL PAID</div>
+                <div class="total-amount">₱{{ booking.total_amount }}</div>
             </div>
         </div>
-        
-        <div class="seats">
-            <strong>Seats:</strong> {{ booking.seats|join:", " }}
-        </div>
-        
-        <div class="booking-info">
-            <div class="info-row">
-                <span class="info-label">Number of Tickets:</span>
-                <span>{{ booking.number_of_tickets }}</span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">Total Amount:</span>
-                <span>₱{{ booking.total_amount }}</span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">Payment Status:</span>
-                <span>{{ booking.get_payment_status_display }}</span>
-            </div>
-        </div>
-        
-        {% if booking.qr_code %}
-        <div class="qr-code">
-            <img src="{{ booking.qr_code.path }}" width="150" height="150">
-            <p>Scan this QR code at the cinema</p>
-        </div>
-        {% endif %}
-        
-        <div class="footer">
-            <p>Thank you for your booking!</p>
-            <p>Please arrive at least 30 minutes before the showtime.</p>
-            <p>Present this ticket or the QR code for entry.</p>
+
+        <!-- Footer -->
+        <div class="ticket-footer">
+            <div>Please present this ticket or QR code for entry</div>
+            <div class="booking-ref">REF: {{ booking.booking_reference }}</div>
         </div>
     </div>
 </body>

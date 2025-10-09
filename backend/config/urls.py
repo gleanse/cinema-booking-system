@@ -13,6 +13,8 @@ urlpatterns = [
     path('api/v1/', include('users.api.v1.urls')),
     # SHOWTIMES app
     path('api/v1/', include('showtimes.api.v1.urls')),
+    # BOOKINGS app
+    path('api/v1/', include('bookings.api.v1.urls')),
 ]
 
 

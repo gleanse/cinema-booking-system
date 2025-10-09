@@ -11,7 +11,6 @@ ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=Csv())
 # TODO[security]: enable production security flags
 # see SECURITY_NOTES.md for details
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -44,6 +43,8 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+FRONTEND_URL = config('FRONTEND_URL', default='http://localhost:5173')
 
 # when debug which is development local it will use any origins like localhost or postman
 if DEBUG:
@@ -109,7 +110,6 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 15,
 }
 
-
 if config('SQLITE_USE', default=False, cast=bool):
     # PORTABILITY (portable, SQLite works anywhere)
     DATABASES = {
@@ -139,10 +139,7 @@ else:
         }
     }
 
-
 # Password validation
-# https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -158,22 +155,15 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
-# https://docs.djangoproject.com/en/5.2/topics/i18n/
-
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
 USE_TZ = True
 
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
 
 # MEDIA STORAGE:
 # true or false value that can configure on env.
@@ -182,7 +172,6 @@ USE_CLOUDINARY = config('USE_CLOUDINARY', cast=bool)
 # production ready
 if USE_CLOUDINARY:
     # for deployment ready storage for poster image
-    # latest django storage configuration needs to be in this python dictionary with two keys for default and static files old defaultstorage was depecrated
     STORAGES = {
         'default': {
             'BACKEND': 'cloudinary_storage.storage.MediaCloudinaryStorage',
@@ -212,7 +201,6 @@ else:
     MEDIA_URL = config('MEDIA_URL', default='/media/')
     MEDIA_ROOT = BASE_DIR / config('MEDIA_ROOT', default='media')
 
-
 # EMAIL CONFIGURATION
 EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.smtp.EmailBackend')
 EMAIL_HOST = config('EMAIL_HOST', default='smtp.gmail.com')
@@ -225,12 +213,3 @@ DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@yourcinema.co
 # for development/testing - use console email backend
 if DEBUG:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-
-if not DEBUG:
-    XENDIT_SECRET_KEY = config('XENDIT_SECRET_KEY', default=None)
-    XENDIT_PUBLIC_KEY = config('XENDIT_PUBLIC_KEY', default=None)
-    XENDIT_CALLBACK_TOKEN = config('XENDIT_CALLBACK_TOKEN', default=None)
-else:
-    XENDIT_SECRET_KEY = None
-    XENDIT_PUBLIC_KEY = None
-    XENDIT_CALLBACK_TOKEN = None

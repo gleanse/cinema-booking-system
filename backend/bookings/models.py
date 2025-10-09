@@ -10,10 +10,8 @@ from io import BytesIO
 from django.core.files.base import ContentFile
 from xhtml2pdf import pisa
 from django.utils import timezone
-import os
 
 class Booking(models.Model):
-    # Payment status choices
     PAYMENT_STATUS_PENDING = 'pending'
     PAYMENT_STATUS_PAID = 'paid'
     PAYMENT_STATUS_FAILED = 'failed'
@@ -26,6 +24,18 @@ class Booking(models.Model):
         (PAYMENT_STATUS_FAILED, 'Failed'),
         (PAYMENT_STATUS_CANCELLED, 'Cancelled'),
         (PAYMENT_STATUS_REFUNDED, 'Refunded'),
+    ]
+
+    PAYMENT_METHOD_CREDIT_CARD = 'credit_card'
+    PAYMENT_METHOD_DEBIT_CARD = 'debit_card'
+    PAYMENT_METHOD_EWALLET = 'ewallet'
+    PAYMENT_METHOD_BANK_TRANSFER = 'bank_transfer'
+    
+    PAYMENT_METHOD_CHOICES = [
+        (PAYMENT_METHOD_CREDIT_CARD, 'Credit Card'),
+        (PAYMENT_METHOD_DEBIT_CARD, 'Debit Card'),
+        (PAYMENT_METHOD_EWALLET, 'E-Wallet'),
+        (PAYMENT_METHOD_BANK_TRANSFER, 'Bank Transfer'),
     ]
 
     # Booking information
@@ -47,22 +57,24 @@ class Booking(models.Model):
     payment_status = models.CharField(
         max_length=20, 
         choices=PAYMENT_STATUS_CHOICES, 
-        default=PAYMENT_STATUS_PENDING
+        default=PAYMENT_STATUS_PAID
     )
-    payment_reference = models.CharField(max_length=100, blank=True, null=True)
-    payment_gateway = models.CharField(max_length=50, blank=True, null=True)
-    payment_date = models.DateTimeField(blank=True, null=True)
+    payment_reference = models.CharField(max_length=100, unique=True, blank=True, null=True)
+    payment_gateway = models.CharField(max_length=50, default='mock_payment_gateway')
+    payment_method = models.CharField(
+        max_length=20, 
+        choices=PAYMENT_METHOD_CHOICES, 
+        default=PAYMENT_METHOD_CREDIT_CARD
+    )
+    payment_date = models.DateTimeField(auto_now_add=True)  # auto-set to now
     
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    expires_at = models.DateTimeField()  # Booking expiration time
+    expires_at = models.DateTimeField(blank=True, null=True)  # made optional since payments are instant
     
     # QR Code for ticket validation
     qr_code = models.ImageField(upload_to='qr_codes/', blank=True, null=True)
-    # PAYMENT GATEWAY
-    xendit_invoice_id = models.CharField(max_length=100, blank=True, null=True)
-    payment_expiry = models.DateTimeField(blank=True, null=True)
     
     class Meta:
         ordering = ['-created_at']
@@ -70,14 +82,22 @@ class Booking(models.Model):
     def __str__(self):
         return f"Booking {self.booking_reference} - {self.customer_name}"
     
+    def _generate_payment_reference(self):
+        """Generate a unique, stable payment reference for this booking"""
+        return f"MOCK_{self.booking_reference.hex[:16].upper()}"
+    
     def save(self, *args, **kwargs):
-        if not self.expires_at:
-            # Set expiration to 15 minutes from creation for pending payments
-            self.expires_at = timezone.now() + timezone.timedelta(minutes=15)
+        # generate stable payment reference only once when booking is created
+        if not self.pk and not self.payment_reference:
+            self.payment_reference = self._generate_payment_reference()
         
-        # Generate QR code when booking is created
+        # auto-set payment status to paid for new bookings
+        if not self.pk and self.payment_status == self.PAYMENT_STATUS_PENDING:
+            self.payment_status = self.PAYMENT_STATUS_PAID
+        
+        # generate qr code when booking is created
         if not self.pk and not self.qr_code:
-            super().save(*args, **kwargs)  # Save first to get ID
+            super().save(*args, **kwargs)
             self.generate_qr_code()
             kwargs['force_insert'] = False
         
@@ -93,6 +113,7 @@ class Booking(models.Model):
         Cinema: {self.showtime.room.cinema.name}
         Room: {self.showtime.room.name}
         Seats: {', '.join(self.seats)}
+        Payment Reference: {self.payment_reference}
         """
         
         qr = qrcode.QRCode(
@@ -146,6 +167,7 @@ class Booking(models.Model):
             'showtime': self.showtime,
             'movie': self.showtime.movie,
             'cinema': self.showtime.room.cinema,
+            'payment_reference': self.payment_reference,
         }
         
         html_message = render_to_string('bookings/email_confirmation.html', context)
@@ -179,10 +201,49 @@ class Booking(models.Model):
             print(f"Failed to send email: {e}")
             return False
     
-    def mark_as_paid(self, payment_reference, gateway):
-        """Mark booking as paid and send confirmation"""
+    def process_payment(self, payment_method=None):
+        """
+        Mock payment processing - automatically successful
+        Returns payment response similar to real gateway
+        """
+        if payment_method:
+            self.payment_method = payment_method
+        
+        # ensure payment reference is set and stable
+        if not self.payment_reference:
+            self.payment_reference = self._generate_payment_reference()
+        
+        # auto-mark as paid with stable reference
         self.payment_status = self.PAYMENT_STATUS_PAID
-        self.payment_reference = payment_reference
+        self.payment_gateway = 'mock_payment_gateway'
+        self.save()
+        
+        # send confirmation email
+        self.send_confirmation_email()
+        
+        # update seat availability
+        self.update_seat_availability()
+        
+        # return mock payment response
+        return {
+            'success': True,
+            'payment_reference': self.payment_reference,  # this will always be the same
+            'status': 'PAID',
+            'gateway': 'mock_payment_gateway',
+            'paid_at': self.payment_date.isoformat() if self.payment_date else timezone.now().isoformat(),
+            'message': 'Payment processed successfully',
+            'booking_reference': str(self.booking_reference)
+        }
+    
+    def mark_as_paid(self, payment_reference=None, gateway='mock_payment_gateway'):
+        """Mark booking as paid and send confirmation"""
+        # use existing payment reference or generate stable one
+        if payment_reference:
+            self.payment_reference = payment_reference
+        elif not self.payment_reference:
+            self.payment_reference = self._generate_payment_reference()
+            
+        self.payment_status = self.PAYMENT_STATUS_PAID
         self.payment_gateway = gateway
         self.payment_date = timezone.now()
         self.save()
@@ -192,6 +253,8 @@ class Booking(models.Model):
         
         # Update seat availability
         self.update_seat_availability()
+        
+        return True
     
     def update_seat_availability(self):
         """Update seat availability in showtime"""
@@ -224,8 +287,8 @@ class Booking(models.Model):
         self.save()
     
     def is_expired(self):
-        """Check if booking has expired"""
-        return timezone.now() > self.expires_at and self.payment_status == self.PAYMENT_STATUS_PENDING
+        """Check if booking has expired - now less relevant since payments are instant"""
+        return False  # payments are instant now, so no expiration for paid bookings
     
     @property
     def formatted_total_amount(self):
@@ -234,3 +297,26 @@ class Booking(models.Model):
     @property
     def formatted_showtime(self):
         return f"{self.showtime.show_date} {self.showtime.show_time}"
+    
+    @property
+    def is_paid(self):
+        """Check if booking is paid"""
+        return self.payment_status == self.PAYMENT_STATUS_PAID
+    
+    @classmethod
+    def create_booking(cls, **kwargs):
+        """
+        Create a new booking with automatic payment processing
+        """
+        booking = cls(**kwargs)
+        
+        # generate stable payment reference before saving
+        if not booking.payment_reference:
+            booking.payment_reference = booking._generate_payment_reference()
+            
+        booking.save()
+        
+        # auto-process payment
+        payment_result = booking.process_payment()
+        
+        return booking, payment_result

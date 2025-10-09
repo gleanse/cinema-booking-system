@@ -32,6 +32,7 @@ pyHanko==0.31.0
 pyhanko-certvalidator==0.29.0
 pypdf==6.0.0
 python-bidi==0.6.6
+python-dateutil==2.9.0.post0
 python-decouple==3.8
 PyYAML==6.0.2
 qrcode==8.2
@@ -51,5 +52,4 @@ uritools==5.0.0
 urllib3==2.5.0
 webencodings==0.5.1
 whitenoise==6.9.0
-xendit-python==7.0.0
 xhtml2pdf==0.2.17
