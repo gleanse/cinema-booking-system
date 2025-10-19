@@ -69,7 +69,9 @@ const useMoviesCRUD = (user = null) => {
       setError(null);
 
       const response = await movieAPIcrud.getMovies(detail);
-      const movieData = response.data.results || response.data;
+      const movieData = Array.isArray(response.data)
+        ? response.data
+        : response.data.results || [];
       setMovies(movieData);
       return movieData;
     } catch (err) {
@@ -87,7 +89,9 @@ const useMoviesCRUD = (user = null) => {
         setError(null);
 
         const response = await movieAPIcrud.getMoviesByGenre(genreId, detail);
-        const movieData = response.data.results || response.data;
+        const movieData = Array.isArray(response.data)
+          ? response.data
+          : response.data.results || [];
         setMovies(movieData);
         return movieData;
       } catch (err) {
@@ -123,7 +127,9 @@ const useMoviesCRUD = (user = null) => {
       setError(null);
 
       const response = await movieAPIcrud.searchMovies(query);
-      const movieData = response.data.results || response.data;
+      const movieData = Array.isArray(response.data)
+        ? response.data
+        : response.data.results || [];
       setMovies(movieData);
       return movieData;
     } catch (err) {
@@ -257,4 +263,3 @@ const useMoviesCRUD = (user = null) => {
 };
 
 export default useMoviesCRUD;
-  

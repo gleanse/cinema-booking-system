@@ -269,6 +269,9 @@ export const bookingAPI = {
     api.get(`bookings/${bookingReference}/download-ticket/`, {
       responseType: 'blob',
     }),
+
+  getBookingOverview: () => api.get('bookings/overview/'),
+  getBookingSummary: () => api.get('bookings/summary/'),
 };
 
 export const tokenUtils = {
