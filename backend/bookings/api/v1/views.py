@@ -9,6 +9,9 @@ from django.http import HttpResponse
 from xhtml2pdf import pisa
 from django.template.loader import render_to_string
 from io import BytesIO
+from django.db.models import Sum, Count
+from django.utils import timezone
+from rest_framework.permissions import IsAuthenticated
 
 class BookingCreateView(APIView):
     permission_classes = [AllowAny]
@@ -95,3 +98,63 @@ class DownloadTicketView(APIView):
                 {"error": "Booking not found."},
                 status=status.HTTP_404_NOT_FOUND
             )
+        
+class BookingOverviewView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        # total metrics
+        total_bookings = Booking.objects.count()
+        total_revenue = Booking.objects.filter(
+            payment_status=Booking.PAYMENT_STATUS_PAID
+        ).aggregate(Sum('total_amount'))['total_amount__sum'] or 0
+        
+        # todays metrics
+        today = timezone.now().date()
+        today_bookings = Booking.objects.filter(created_at__date=today).count()
+        today_revenue = Booking.objects.filter(
+            created_at__date=today,
+            payment_status=Booking.PAYMENT_STATUS_PAID
+        ).aggregate(Sum('total_amount'))['total_amount__sum'] or 0
+        
+        # this months trends (daily breakdown)
+        monthly_data = Booking.objects.filter(
+            created_at__year=timezone.now().year,
+            created_at__month=timezone.now().month
+        ).values('created_at__date').annotate(
+            daily_bookings=Count('id'),
+            daily_revenue=Sum('total_amount')
+        ).order_by('created_at__date')
+        
+        return Response({
+            'total_bookings': total_bookings,
+            'total_revenue': float(total_revenue),
+            'today_bookings': today_bookings,
+            'today_revenue': float(today_revenue),
+            'monthly_trends': list(monthly_data)
+        })
+
+class BookingSummaryView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        # payment status breakdown
+        payment_stats = Booking.objects.values('payment_status').annotate(
+            count=Count('id'),
+            revenue=Sum('total_amount')
+        )
+        
+        # popular movies (through showtime relationship)
+        popular_movies = Booking.objects.filter(
+            payment_status=Booking.PAYMENT_STATUS_PAID
+        ).values(
+            'showtime__movie__title'
+        ).annotate(
+            bookings=Count('id'),
+            revenue=Sum('total_amount')
+        ).order_by('-bookings')[:5]
+        
+        return Response({
+            'payment_stats': list(payment_stats),
+            'popular_movies': list(popular_movies)
+        })

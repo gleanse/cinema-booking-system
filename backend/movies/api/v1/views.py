@@ -3,7 +3,6 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.exceptions import NotFound
 from rest_framework.parsers import MultiPartParser, JSONParser
-from rest_framework.pagination import PageNumberPagination
 from django.db.models import Count, Prefetch
 from django.utils import timezone
 from showtimes.models import Showtime  
@@ -172,16 +171,13 @@ class MovieListView(APIView):
         if genre_id:
             movies = movies.filter(genre_id=genre_id)
 
-        paginator = PageNumberPagination()
-        page = paginator.paginate_queryset(movies, request)
-
         mode = request.query_params.get("detail","summary").lower()
 
         if mode == "full":
-            serializer = MovieSerializer(page, many=True, context={'request': request})
+            serializer = MovieSerializer(movies, many=True, context={'request': request})
         else:
-            serializer = MovieListSerializer(page, many=True, context={'request': request})
-        return paginator.get_paginated_response(serializer.data)
+            serializer = MovieListSerializer(movies, many=True, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request):
         serializer = MovieSerializer(data=request.data, context={'request': request})
@@ -270,8 +266,5 @@ class MovieSearchView(APIView):
         else:
             movies = qs
 
-        paginator = PageNumberPagination()
-        page = paginator.paginate_queryset(movies, request)
-
-        serializer = MovieListSerializer(page, many=True, context={"request": request})
-        return paginator.get_paginated_response(serializer.data)
+        serializer = MovieListSerializer(movies, many=True, context={"request": request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
