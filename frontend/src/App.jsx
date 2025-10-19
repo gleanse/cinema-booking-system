@@ -14,6 +14,7 @@ import BookingPage from './pages/BookingPage';
 import BookingConfirmationPage from './pages/BookingConfirmationPage';
 // ADMIN PAGES
 import Sidebar from './components/admin/Sidebar';
+import DashboardPage from './pages/admin/DashboardPage';
 import GenresPage from './pages/admin/GenresPage';
 import AdminMoviesPage from './pages/admin/AdminMoviesPage';
 import AdminCinemasPage from './pages/admin/AdminCinemasPage';
@@ -77,6 +78,7 @@ function App() {
                 <ProtectedRoute>
                   <div className="p-6 min-h-full">
                     <Routes>
+                      <Route path="" element={<DashboardPage />} />{' '}
                       <Route path="genres" element={<GenresPage />} />
                       <Route path="movies" element={<AdminMoviesPage />} />
                       <Route path="cinemas" element={<AdminCinemasPage />} />

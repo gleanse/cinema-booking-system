@@ -15,12 +15,14 @@ const MovieDetailsPage = () => {
   } = useMovieShowtimes(id);
 
   const handleBuyTicket = (movie, showtime = null) => {
-    console.log('Buy ticket for:', movie);
+    console.log('Buy ticket for:', movie.title);
+
     if (showtime) {
       console.log('Selected showtime:', showtime);
+      navigate(`/booking/${showtime.id}`);
+    } else {
+      navigate(`/cinemas?movie=${movie.id}`);
     }
-    // TODO: implement ticket purchasing logic
-    // this could open a modal, navigate to checkout, etc.
   };
 
   const handleGoBack = () => {

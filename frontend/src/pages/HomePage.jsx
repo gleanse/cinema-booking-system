@@ -1,23 +1,17 @@
-import { useCallback, useState, useMemo, useEffect, useRef } from 'react';
+import { useCallback, useState, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaFilm, FaExclamationTriangle, FaSearch, FaSpinner } from 'react-icons/fa';
+import { FaFilm, FaExclamationTriangle, FaSearch } from 'react-icons/fa';
 import MovieGrid from '../components/MovieGrid';
 import SearchBar from '../components/SearchBar';
-import useMoviesLazyLoading from '../hooks/useMoviesLazyLoading';
+import useMovies from '../hooks/useMovies';
 import { usePolling } from '../hooks/usePolling';
+import useCinemasCRUD from '../hooks/useCinemasCRUD';
 
 const HomePage = () => {
   const navigate = useNavigate();
-  const {
-    movies,
-    loading,
-    loadingMore,
-    hasMore,
-    loadMore,
-    error,
-    refetch,
-    searchMovies,
-  } = useMoviesLazyLoading();
+  const { movies, loading, error, refetch, searchMovies } = useMovies();
+
+  const { cinemas, loading: cinemasLoading } = useCinemasCRUD();
 
   const [currentSearch, setCurrentSearch] = useState('');
   const isInitialMount = useRef(true);
@@ -32,6 +26,26 @@ const HomePage = () => {
     console.log('Selected movie:', movie);
     navigate(`/movies/${movie.id}`);
   };
+
+  const handleBuyTicket = useCallback(
+    (movie) => {
+      console.log('Buy ticket for:', movie.title);
+
+      if (cinemasLoading) {
+        console.log('Cinemas still loading...');
+        return;
+      }
+
+      if (cinemas && cinemas.length > 0) {
+        // navigate to showtimes of the first available cinema
+        navigate(`/cinemas/${cinemas[0].id}/showtimes`);
+      } else {
+        // fallback to cinema list
+        navigate('/cinemas');
+      }
+    },
+    [cinemas, cinemasLoading, navigate]
+  );
 
   const handleSearch = useCallback(
     (searchTerm) => {
@@ -61,23 +75,6 @@ const HomePage = () => {
         movie.showtimes && movie.is_active && movie.showtimes.length > 0
     );
   }, [movies]);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollTop = window.scrollY;
-      const windowHeight = window.innerHeight;
-      const documentHeight = document.documentElement.scrollHeight;
-
-      if (scrollTop + windowHeight >= documentHeight - 200) {
-        if (!loadingMore && hasMore && !currentSearch) {
-          loadMore();
-        }
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [loadMore, loadingMore, hasMore, currentSearch]);
 
   return (
     <div className="container mx-auto px-4 py-6">
@@ -130,7 +127,8 @@ const HomePage = () => {
           loading={loading}
           error={null}
           onMovieClick={handleMovieClick}
-          emptyMessage="" // empty message handled by page now
+          onBuyTicket={handleBuyTicket}
+          emptyMessage=""
         />
       )}
 
@@ -169,33 +167,6 @@ const HomePage = () => {
           </div>
         </div>
       )}
-
-      {/* loading more indicator */}
-      {loadingMore && (
-        <div className="mt-8 text-center">
-          <div className="inline-flex items-center px-4 py-2 bg-primary/10 rounded-lg">
-            <FaSpinner className="h-4 w-4 text-primary animate-spin mr-2" />
-            <span className="text-primary font-medium">
-              Loading more movies...
-            </span>
-          </div>
-        </div>
-      )}
-
-      {/* end of results */}
-      {!loading &&
-        !loadingMore &&
-        !hasMore &&
-        !currentSearch &&
-        moviesWithShowtimes.length > 0 && (
-          <div className="mt-8 text-center">
-            <div className="inline-flex items-center px-4 py-2 bg-neutral/10 rounded-lg">
-              <span className="text-neutral">
-                You've reached the end of the movie list
-              </span>
-            </div>
-          </div>
-        )}
 
       {/* MOVIES count */}
       {!loading && !error && moviesWithShowtimes.length > 0 && (
