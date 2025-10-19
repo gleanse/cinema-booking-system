@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAuthenticated
-from users.api.v1.serializers import UserCreateSerializer, UserSerializer
+from users.api.v1.serializers import UserCreateSerializer, UserSerializer, UserUpdateSerializer, UserSelfUpdateSerializer
 from config.permissions import IsSuperUser, AllowAny
 from config.throttles import LoginRateThrottle
 
@@ -59,3 +59,103 @@ class CurrentUserView(APIView):
         user = request.user
         serializer = UserSerializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+class UserListView(APIView):
+    permission_classes = [IsSuperUser]
+
+    def get(self, request):
+        users = User.objects.all().order_by('-date_joined')
+        serializer = UserSerializer(users, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class UserDetailView(APIView):
+    permission_classes = [IsSuperUser]
+
+    def get(self, request, user_id):
+        try:
+            user = User.objects.get(id=user_id)
+            serializer = UserSerializer(user)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+
+class UserUpdateView(APIView):
+    permission_classes = [IsSuperUser]
+
+    def put(self, request, user_id):
+        try:
+            user = User.objects.get(id=user_id)
+            serializer = UserUpdateSerializer(user, data=request.data)
+            
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+
+class UserDeleteView(APIView):
+    permission_classes = [IsSuperUser]
+
+    def delete(self, request, user_id):
+        try:
+            user = User.objects.get(id=user_id)
+            # prevent users from deleting themselves
+            if user.id == request.user.id:
+                return Response(
+                    {'error': 'You cannot delete your own account'}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            user.delete()
+            return Response(
+                {'message': 'User deleted successfully'}, 
+                status=status.HTTP_200_OK
+            )
+            
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+
+class UserToggleActiveView(APIView):
+    permission_classes = [IsSuperUser]
+
+    def patch(self, request, user_id):
+        try:
+            user = User.objects.get(id=user_id)
+
+            if user.id == request.user.id:
+                return Response(
+                    {'error': 'You cannot deactivate your own account'}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            user.is_active = not user.is_active
+            user.save()
+            
+            serializer = UserSerializer(user)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+            
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+class UserSelfUpdateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request):
+        user = request.user
+        if user.is_superuser:
+            # superusers can use the full update serializer
+            serializer = UserUpdateSerializer(user, data=request.data, partial=True)
+        else:
+            # staff users can only update basic info
+            serializer = UserSelfUpdateSerializer(user, data=request.data, partial=True)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
