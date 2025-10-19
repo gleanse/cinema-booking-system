@@ -18,6 +18,7 @@ import GenresPage from './pages/admin/GenresPage';
 import AdminMoviesPage from './pages/admin/AdminMoviesPage';
 import AdminCinemasPage from './pages/admin/AdminCinemasPage';
 import AdminShowtimesPage from './pages/admin/AdminShowtimesPage';
+import AdminAccountsPage from './pages/admin/AdminAccountsPage';
 
 function App() {
   const location = useLocation();
@@ -83,6 +84,7 @@ function App() {
                         path="showtimes"
                         element={<AdminShowtimesPage />}
                       />
+                      <Route path="accounts" element={<AdminAccountsPage />} />
                     </Routes>
                   </div>
                 </ProtectedRoute>

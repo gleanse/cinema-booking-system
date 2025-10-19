@@ -16,6 +16,7 @@ import {
   FaChevronRight,
   FaSun,
   FaMoon,
+  FaUsers,
 } from 'react-icons/fa';
 import { useAuth } from '../../hooks/useAuth';
 import ConfirmationModal from './ConfirmationModal';
@@ -61,10 +62,9 @@ const Sidebar = ({ isCollapsed: propIsCollapsed, onToggleCollapse }) => {
       path: '/admin/showtimes',
     },
     {
-      name: 'Settings',
-      icon: FaCog,
-      path: '/admin/settings',
-      comingSoon: true,
+      name: 'Accounts',
+      icon: FaUsers,
+      path: '/admin/accounts',
     },
   ];
 

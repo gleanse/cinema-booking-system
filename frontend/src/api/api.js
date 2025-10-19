@@ -42,6 +42,24 @@ api.interceptors.response.use(
 export const userAPI = {
   // GET current user info
   getCurrentUser: () => api.get('users/me/'),
+
+  // GET all users (for superusers only)
+  getAllUsers: () => api.get('users/'),
+
+  // GET user by ID
+  getUser: (id) => api.get(`users/${id}/`),
+
+  // UPDATE user
+  updateUser: (id, userData) => api.put(`users/${id}/update/`, userData),
+
+  // DELETE user
+  deleteUser: (id) => api.delete(`users/${id}/delete/`),
+
+  // TOGGLE user active status
+  toggleUserActive: (id) => api.patch(`users/${id}/toggle-active/`),
+
+  // UPDATE current user (for staff users to update their own account)
+  updateCurrentUser: (userData) => api.put('users/me/update/', userData),
 };
 
 // AUTH api functions

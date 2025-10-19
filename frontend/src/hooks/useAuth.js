@@ -7,6 +7,261 @@ export const useAuth = () => {
   const [user, setUser] = useState(null);
   const [userLoading, setUserLoading] = useState(false);
 
+  // REGISTER NEW USER (superuser only)
+  const register = async (userData) => {
+    setError('');
+    setLoading(true);
+
+    try {
+      const response = await authAPI.register(userData);
+      console.log('User registration successful');
+
+      const { token, user: newUser } = response.data;
+      console.log('New user created:', newUser.username);
+
+      return {
+        success: true,
+        user: newUser,
+        token,
+        message: 'User created successfully',
+      };
+    } catch (err) {
+      console.error('Registration failed:', err);
+      let errorMessage = 'Registration failed. Please try again.';
+
+      if (err.response?.status === 403) {
+        errorMessage =
+          'Permission denied. Only superusers can create new accounts.';
+      } else if (err.response?.status === 400) {
+        const errorData = err.response.data;
+        if (typeof errorData === 'object') {
+          const firstErrorKey = Object.keys(errorData)[0];
+          if (firstErrorKey) {
+            const firstError = errorData[firstErrorKey];
+            errorMessage = Array.isArray(firstError)
+              ? firstError[0]
+              : firstError;
+            if (
+              firstErrorKey === 'username' &&
+              errorMessage.includes('already exists')
+            ) {
+              errorMessage =
+                'Username already exists. Please choose a different username.';
+            } else if (
+              firstErrorKey === 'email' &&
+              errorMessage.includes('already exists')
+            ) {
+              errorMessage =
+                'Email already exists. Please use a different email.';
+            }
+          }
+        } else if (typeof errorData === 'string') {
+          errorMessage = errorData;
+        }
+      } else if (err.response?.data?.error) {
+        errorMessage = err.response.data.error;
+      } else if (err.response?.status === 500) {
+        errorMessage = 'Server error. Please try again later.';
+      }
+
+      setError(errorMessage);
+      return { success: false, error: errorMessage };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // GET ALL USERS (superuser only)
+  const getAllUsers = async () => {
+    setError('');
+    setLoading(true);
+
+    try {
+      console.log('Fetching all users...');
+      const response = await userAPI.getAllUsers();
+      console.log('Users fetched successfully');
+      return {
+        success: true,
+        users: response.data,
+      };
+    } catch (err) {
+      console.error('Failed to fetch users:', err);
+      let errorMessage = 'Failed to fetch users. Please try again.';
+
+      if (err.response?.status === 403) {
+        errorMessage = 'Permission denied. Only superusers can view all users.';
+      } else if (err.response?.data?.error) {
+        errorMessage = err.response.data.error;
+      }
+
+      setError(errorMessage);
+      return { success: false, error: errorMessage };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // UPDATE USER (superuser only)
+  const updateUser = async (userId, userData) => {
+    setError('');
+    setLoading(true);
+
+    try {
+      const response = await userAPI.updateUser(userId, userData);
+      console.log('User updated successfully');
+      return {
+        success: true,
+        user: response.data,
+        message: 'User updated successfully',
+      };
+    } catch (err) {
+      console.error('User update failed:', err);
+      let errorMessage = 'Failed to update user. Please try again.';
+
+      if (err.response?.status === 403) {
+        errorMessage = 'Permission denied. Only superusers can update users.';
+      } else if (err.response?.status === 400) {
+        const errorData = err.response.data;
+        if (typeof errorData === 'object') {
+          const firstErrorKey = Object.keys(errorData)[0];
+          if (firstErrorKey) {
+            const firstError = errorData[firstErrorKey];
+            errorMessage = Array.isArray(firstError)
+              ? firstError[0]
+              : firstError;
+          }
+        } else if (typeof errorData === 'string') {
+          errorMessage = errorData;
+        }
+      } else if (err.response?.data?.error) {
+        errorMessage = err.response.data.error;
+      }
+
+      setError(errorMessage);
+      return { success: false, error: errorMessage };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // UPDATE CURRENT USER (for staff users to update their own account)
+  const updateCurrentUser = async (userData) => {
+    setError('');
+    setLoading(true);
+
+    try {
+      const response = await userAPI.updateCurrentUser(userData);
+      console.log('Current user updated successfully');
+
+      setUser((prev) => ({ ...prev, ...response.data }));
+
+      return {
+        success: true,
+        user: response.data,
+        message: 'Account updated successfully',
+      };
+    } catch (err) {
+      console.error('Current user update failed:', err);
+      let errorMessage = 'Failed to update account. Please try again.';
+
+      if (err.response?.status === 400) {
+        const errorData = err.response.data;
+        if (typeof errorData === 'object') {
+          const firstErrorKey = Object.keys(errorData)[0];
+          if (firstErrorKey) {
+            const firstError = errorData[firstErrorKey];
+            errorMessage = Array.isArray(firstError)
+              ? firstError[0]
+              : firstError;
+          }
+        } else if (typeof errorData === 'string') {
+          errorMessage = errorData;
+        }
+      } else if (err.response?.data?.error) {
+        errorMessage = err.response.data.error;
+      }
+
+      setError(errorMessage);
+      return { success: false, error: errorMessage };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // DELETE USER (superuser only)
+  const deleteUser = async (userId) => {
+    setError('');
+    setLoading(true);
+
+    try {
+      console.log('Deleting user:', userId);
+      await userAPI.deleteUser(userId);
+      console.log('User deleted successfully');
+      return {
+        success: true,
+        message: 'User deleted successfully',
+      };
+    } catch (err) {
+      console.error('User deletion failed:', err);
+      let errorMessage = 'Failed to delete user. Please try again.';
+
+      if (err.response?.status === 403) {
+        errorMessage = 'Permission denied. Only superusers can delete users.';
+      } else if (err.response?.data?.error) {
+        errorMessage = err.response.data.error;
+      } else if (err.response?.status === 404) {
+        errorMessage = 'User not found.';
+      }
+
+      setError(errorMessage);
+      return { success: false, error: errorMessage };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // TOGGLE USER ACTIVE STATUS (superuser only)
+  const toggleUserActive = async (userId) => {
+    setError('');
+    setLoading(true);
+
+    try {
+      console.log('Toggling user active status:', userId);
+      const response = await userAPI.toggleUserActive(userId);
+      console.log('User status toggled successfully');
+      return {
+        success: true,
+        user: response.data,
+        message: 'User status updated successfully',
+      };
+    } catch (err) {
+      console.error('User status toggle failed:', err);
+      let errorMessage = 'Failed to update user status. Please try again.';
+
+      if (err.response?.status === 403) {
+        errorMessage =
+          'Permission denied. Only superusers can modify user status.';
+      } else if (err.response?.data?.error) {
+        errorMessage = err.response.data.error;
+      }
+
+      setError(errorMessage);
+      return { success: false, error: errorMessage };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // CHECK IF CURRENT USER CAN REGISTER NEW ACCOUNTS
+  const canRegister = () => {
+    return user?.is_superuser === true;
+  };
+
+  // CHECK IF CURRENT USER CAN MANAGE USERS
+  const canManageUsers = () => {
+    return user?.is_superuser === true;
+  };
+
   // LOGIN
   const login = async (username, password, rememberMe = false) => {
     setError('');
@@ -60,7 +315,7 @@ export const useAuth = () => {
       await authAPI.logout();
       tokenUtils.removeToken();
       setUser(null);
-      console.log('Logout successful')
+      console.log('Logout successful');
       return { success: true };
     } catch (err) {
       console.error('Logout error:', err);
@@ -116,6 +371,14 @@ export const useAuth = () => {
   };
 
   return {
+    register,
+    getAllUsers,
+    updateUser,
+    updateCurrentUser,
+    deleteUser,
+    toggleUserActive,
+    canRegister,
+    canManageUsers,
     login,
     logout,
     isAuthenticated,
