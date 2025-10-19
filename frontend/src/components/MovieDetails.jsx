@@ -241,7 +241,7 @@ const MovieDetails = ({ movie, showtimes, showtimesLoading, onBuyTicket }) => {
                 <div className="pt-6 border-t border-neutral/20">
                   <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center space-x-2">
                     <HiOutlineTicket className="h-5 w-5 text-primary" />
-                    <span>Showtimes</span>
+                    <span>Available Showtimes</span>
                   </h3>
 
                   {showtimesLoading ? (

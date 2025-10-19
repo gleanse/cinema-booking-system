@@ -5,6 +5,7 @@ const MovieGrid = ({
   loading = false,
   error = null,
   onMovieClick,
+  onBuyTicket,
   className = '',
   emptyMessage = 'No movies found',
   showBuyButton = true,
@@ -51,6 +52,7 @@ const MovieGrid = ({
           key={movie.id}
           movie={movie}
           onClick={onMovieClick}
+          onBuyTicket={onBuyTicket}
           showBuyButton={showBuyButton}
         />
       ))}

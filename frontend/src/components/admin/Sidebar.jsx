@@ -17,6 +17,7 @@ import {
   FaSun,
   FaMoon,
   FaUsers,
+  FaChartLine,
 } from 'react-icons/fa';
 import { useAuth } from '../../hooks/useAuth';
 import ConfirmationModal from './ConfirmationModal';
@@ -37,9 +38,8 @@ const Sidebar = ({ isCollapsed: propIsCollapsed, onToggleCollapse }) => {
   const menuItems = [
     {
       name: 'Dashboard',
-      icon: FaHome,
+      icon: FaChartLine,
       path: '/admin',
-      comingSoon: true,
     },
     {
       name: 'Movies',

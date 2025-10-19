@@ -7,6 +7,7 @@ import {
 const MovieCard = ({
   movie,
   onClick,
+  onBuyTicket,
   className = '',
   showBuyButton = true,
   loading = false,
@@ -14,6 +15,16 @@ const MovieCard = ({
   const handleClick = () => {
     if (onClick) {
       onClick(movie);
+    }
+  };
+
+  const handleBuyTicketClick = (e) => {
+    e.stopPropagation();
+    console.log('Buy ticket for:', movie.title);
+
+    // use the passed onbuyticket handler if available
+    if (onBuyTicket) {
+      onBuyTicket(movie);
     }
   };
 
@@ -53,15 +64,15 @@ const MovieCard = ({
         <div className="p-2 sm:p-4 space-y-1 sm:space-y-3">
           {/* TITLE SKELETON */}
           <div className="h-4 bg-neutral/25 rounded w-3/4"></div>
-          
+
           {/* GENRE SKELETON */}
           <div className="h-3 bg-neutral/15 rounded w-1/2"></div>
-          
+
           {/* DURATION AND DATE SKELETON */}
           <div className="flex flex-col space-y-1 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
             <div className="h-3 bg-neutral/15 rounded w-1/3"></div>
           </div>
-          
+
           {/* BUTTON SKELETON */}
           {showBuyButton && (
             <div className="mt-4 pt-3 border-t border-inputbrdr">
@@ -161,10 +172,7 @@ const MovieCard = ({
           <div className="mt-4 pt-3 border-t border-white/10 dark:border-primary/20">
             <button
               className="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-1.5 sm:py-2 px-2 sm:px-4 rounded-lg transition-colors duration-200 text-xs sm:text-sm cursor-pointer"
-              onClick={(e) => {
-                e.stopPropagation();
-                console.log('Buy ticket for:', movie.title);
-              }}
+              onClick={handleBuyTicketClick}
             >
               Buy Ticket
             </button>
