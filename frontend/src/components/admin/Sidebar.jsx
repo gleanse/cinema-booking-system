@@ -59,7 +59,6 @@ const Sidebar = ({ isCollapsed: propIsCollapsed, onToggleCollapse }) => {
       name: 'Showtimes',
       icon: FaClock,
       path: '/admin/showtimes',
-      comingSoon: true,
     },
     {
       name: 'Settings',
@@ -228,7 +227,7 @@ const Sidebar = ({ isCollapsed: propIsCollapsed, onToggleCollapse }) => {
             )}
           </button>
         </div>
-        
+
         {/* LOGOUT BUTTON */}
         <div className="p-4 border-t border-inputbrdr flex-shrink-0">
           <button

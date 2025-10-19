@@ -35,6 +35,7 @@ class ScreeningRoomSerializer(serializers.ModelSerializer):
 
 class ShowtimeSerializer(serializers.ModelSerializer):
     movie_title = serializers.CharField(source='movie.title', read_only=True)
+    movie_id = serializers.IntegerField(source='movie.id', read_only=True)
     room = ScreeningRoomSerializer(read_only=True)
     room_id = serializers.PrimaryKeyRelatedField(
         queryset=ScreeningRoom.objects.all(),
@@ -48,6 +49,7 @@ class ShowtimeSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "movie",
+            "movie_id",
             "movie_title",
             "show_date",
             "show_time",
@@ -60,32 +62,69 @@ class ShowtimeSerializer(serializers.ModelSerializer):
         ]
     
     def get_is_full(self, obj):
-        # Returns True if all seats are booked
         if not obj.seats_data:
             return False
         return all(not seat_info.get("available", True) for seat_info in obj.seats_data.values())
 
-class ShowtimeListSerializer(serializers.ModelSerializer):
-    movie_title = serializers.CharField(source='movie.title', read_only=True)
-    room = ScreeningRoomSerializer(read_only=True)
-    is_full = serializers.SerializerMethodField()
+    def validate(self, data):
+        # get the movie duration and calculate end time
+        movie = data.get('movie') or getattr(self.instance, 'movie', None)
+        room = data.get('room') or getattr(self.instance, 'room', None)
+        show_date = data.get('show_date') or getattr(self.instance, 'show_date', None)
+        show_time = data.get('show_time') or getattr(self.instance, 'show_time', None)
+        
+        if not all([movie, room, show_date, show_time]):
+            return data
 
-    class Meta:
-        model = Showtime
-        fields = [
-            "id",
-            "movie_title",
-            "show_date",
-            "show_time",
-            "room",
-            "is_full",
-            "ticket_price",
-        ]
-    
-    def get_is_full(self, obj):
-        if not obj.seats_data:
-            return False
-        return all(not seat_info.get("available", True) for seat_info in obj.seats_data.values())
+        # calculate showtime end (start time + duration + 30min grace)
+        from datetime import timedelta
+        import datetime
+        
+        show_datetime = datetime.datetime.combine(show_date, show_time)
+        end_datetime = show_datetime + timedelta(minutes=movie.duration + 30)
+        
+        # check for ANY showtimes in the same room on the same date
+        # regardless of movie if same room, same date, check time conflicts
+        existing_showtimes = Showtime.objects.filter(
+            room=room,
+            show_date=show_date,
+            is_active=True
+        ).exclude(id=getattr(self.instance, 'id', None))
+
+        for existing_showtime in existing_showtimes:
+            existing_start = datetime.datetime.combine(
+                existing_showtime.show_date, 
+                existing_showtime.show_time
+            )
+            existing_end = existing_start + timedelta(
+                minutes=existing_showtime.movie.duration + 30
+            )
+            
+            # check if time ranges overlap
+            if (show_datetime < existing_end) and (end_datetime > existing_start):
+                # format times beautifully (12-hour format with am/pm)
+                existing_start_formatted = existing_start.strftime('%I:%M %p').lstrip('0')
+                existing_end_formatted = existing_end.strftime('%I:%M %p').lstrip('0')
+                
+                # calculate total runtime in hours and minutes for friendly display
+                total_minutes = movie.duration + 30
+                hours = total_minutes // 60
+                minutes = total_minutes % 60
+                
+                if hours > 0 and minutes > 0:
+                    gap_display = f"{hours} hour{'s' if hours > 1 else ''} and {minutes} minutes"
+                elif hours > 0:
+                    gap_display = f"{hours} hour{'s' if hours > 1 else ''}"
+                else:
+                    gap_display = f"{minutes} minutes"
+                
+                raise serializers.ValidationError({
+                    "show_time": f"This time conflicts with '{existing_showtime.movie.title}' "
+                            f"({existing_start_formatted} - {existing_end_formatted}). "
+                            f"Please allow at least {gap_display} between showtimes in the same room."
+                })
+        
+        return data
 
 class MovieBasicSerializer(serializers.ModelSerializer):
     genre_detail = GenreSerializer(source='genre', read_only=True)
@@ -98,9 +137,37 @@ class MovieBasicSerializer(serializers.ModelSerializer):
             "genre",
             "genre_detail",
             "age_rating",
+            "duration",
             "poster",
             "release_date",
         ]
+
+class ShowtimeListSerializer(serializers.ModelSerializer):
+    movie_title = serializers.CharField(source='movie.title', read_only=True)
+    movie_id = serializers.IntegerField(source='movie.id', read_only=True)
+    movie = MovieBasicSerializer(read_only=True)
+    room = ScreeningRoomSerializer(read_only=True)
+    is_full = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Showtime
+        fields = [
+            "id",
+            "movie_id",
+            "movie_title",
+            "movie",
+            "show_date",
+            "show_time",
+            "room",
+            "is_full",
+            "ticket_price",
+            "is_active",
+        ]
+    
+    def get_is_full(self, obj):
+        if not obj.seats_data:
+            return False
+        return all(not seat_info.get("available", True) for seat_info in obj.seats_data.values())
 
 
 class ShowtimeDetailSerializer(serializers.ModelSerializer):
