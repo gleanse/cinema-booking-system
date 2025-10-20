@@ -13,6 +13,8 @@ from .serializers import (
 )
 from config.permissions import StaffUserOnly, AllowAny
 from config.throttles import AdminOperationThrottle, PublicEndpointThrottle
+from django.utils import timezone
+from django.db.models import Q
 
 # SHOWTIME VIEWS
 class ShowtimeListView(APIView):
@@ -27,11 +29,24 @@ class ShowtimeListView(APIView):
         return [StaffUserOnly()]
 
     def get(self, request):
+        # get current date and time
+        now = timezone.now()
+        current_date = now.date()
+        current_time = now.time()
+        
         # check if user is staff/admin if yes, show all showtimes
         if request.user and (request.user.is_staff or request.user.is_superuser):
             showtimes = Showtime.objects.all()
         else:
-            showtimes = Showtime.objects.filter(is_active=True)  # only active for public
+            # for public: only active showtimes and active movies and future showtimes
+            showtimes = Showtime.objects.filter(
+                is_active=True,
+                movie__is_active=True  # only include active movies
+            )
+            showtimes = showtimes.filter(
+                Q(show_date__gt=current_date) |
+                Q(show_date=current_date, show_time__gte=current_time)
+            )
         
         movie_id = request.query_params.get('movie')
         if movie_id:
@@ -184,11 +199,27 @@ class CinemaShowtimesView(BaseDetailView):
     def get(self, request, cinema_id):
         cinema = self.get_object(cinema_id)
         
+        # get current date and time
+        now = timezone.now()
+        current_date = now.date()
+        current_time = now.time()
+        
         # check if user is staff/admin  show all showtimes for management
         if request.user and (request.user.is_staff or request.user.is_superuser):
             showtimes = Showtime.objects.filter(room__cinema=cinema)  # all showtimes for admin
         else:
-            showtimes = Showtime.objects.filter(room__cinema=cinema, is_active=True)  # only active for public
+            # for public users: only active showtimes and active movies and future showtimes
+            showtimes = Showtime.objects.filter(
+                room__cinema=cinema, 
+                is_active=True,
+                movie__is_active=True  # only include active movies
+            )
+            
+            # filter out past showtimes
+            showtimes = showtimes.filter(
+                Q(show_date__gt=current_date) |  # future dates
+                Q(show_date=current_date, show_time__gte=current_time)  # today but future times
+            )
         
         showtimes = showtimes.select_related('room', 'movie').order_by('show_date', 'show_time')
 
